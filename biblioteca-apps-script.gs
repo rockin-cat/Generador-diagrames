@@ -9,7 +9,7 @@
  *    i veure cançons des de l'eina.
  */
 const CARPETA_ID = 'ENGANXA_AQUI_LID_DE_LA_CARPETA';
-const CODI = 'rockin';
+const CODI = 'xarxa';
 
 function doGet(e) {
   const p = e.parameter || {};
