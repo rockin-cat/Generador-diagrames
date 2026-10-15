@@ -1806,7 +1806,7 @@ function pintarSequenciador(steps) {
   }
   $('sequencer-editor').innerHTML = h + '</div>';
 }
-function canviarCompasBateria() { pintarSequenciador(llegirPatro()); }
+function canviarCompasBateria() { pintarSequenciador(llegirPatro()); updateTempo($('tempo-slider').value); }
 function llegirPatro() {
   const c = compasBateria();
   const st = { HH: Array(c.total).fill(false), SN: Array(c.total).fill(false), BD: Array(c.total).fill(false) };
@@ -1816,7 +1816,11 @@ function llegirPatro() {
 function obrirEditorBateria(it = null) {
   batEditant = it ? it.id : null;
   $('bat-titol').value = it ? it.nom : '';
-  $('bat-compas').value = (it && it.compas) || '4/4';
+  $('bat-compas').value = (it && it.compas) || (estructura.temps === '6' ? '6/8' : '4/4');
+  // el tempo per defecte és el de la cançó, perquè soni igual que a l'estructura
+  const tc = parseInt(estructura.tempo);
+  if (tc) { $('tempo-slider').value = Math.max(+$('tempo-slider').min, Math.min(+$('tempo-slider').max, tc)); }
+  updateTempo($('tempo-slider').value);
   pintarSequenciador(it ? it.steps : null);
   botoGuardar('btn-guardar-bat', !!it);
   obrirModal('modalBateria');
@@ -1836,8 +1840,8 @@ function togglePlayBateria() {
   aturarAudioMelodia(); aturarEstructura();
   Tone.start().then(() => {
     crearDrums();
-    Tone.Transport.bpm.value = +$('tempo-slider').value;
     const cb = compasBateria();
+    Tone.Transport.bpm.value = cb.corxeres ? +$('tempo-slider').value * 1.5 : +$('tempo-slider').value;
     drumSeq = new Tone.Sequence((time, step) => {
       const p = llegirPatro();
       if (p.HH[step]) drumSynths.HH.triggerAttackRelease('32n', time);
@@ -1857,14 +1861,19 @@ function togglePlayBateria() {
 }
 function aturarBateria() {
   if (!isPlayingBat) return;
-  Tone.Transport.stop();
+  Tone.Transport.stop(); Tone.Transport.cancel(0); tallarSoEnSec();
   if (finalBateriaId !== null) { Tone.Transport.clear(finalBateriaId); finalBateriaId = null; }
   if (drumSeq) { drumSeq.dispose(); drumSeq = null; }
   document.querySelectorAll('#sequencer-editor .drum-col').forEach(c => c.classList.remove('playing'));
   $('btn-play-bat').innerHTML = '▶️ Escoltar';
   isPlayingBat = false;
 }
-function updateTempo(v) { $('tempo-valor').innerText = v + ' BPM'; if (typeof Tone !== 'undefined') Tone.Transport.bpm.value = +v; }
+function updateTempo(v) {
+  const c = typeof compasBateria === 'function' ? compasBateria() : { corxeres: false };
+  $('tempo-valor').innerText = v + ' BPM' + (c.corxeres ? ' (negra amb punt)' : '');
+  // als compassos de corxera el pols és la negra amb punt: tres corxeres per pols
+  if (typeof Tone !== 'undefined') Tone.Transport.bpm.value = c.corxeres ? +v * 1.5 : +v;
+}
 
 /* =========================================================
    BAIX
@@ -2461,7 +2470,7 @@ function carregarPiano() {
       release: 1.1,
       onload: () => { pianoLlest = true; estatPiano(); },
       onerror: () => { pianoFallat = true; pianoSampler = null; estatPiano(); }
-    }).toDestination();
+    }).connect(sortida());
     pianoSampler.volume.value = -4;
     setTimeout(() => { if (!pianoLlest) { pianoFallat = true; estatPiano(); } }, 4000);
   } catch (e) { pianoFallat = true; }
@@ -2477,7 +2486,7 @@ function instrumentMelodia() {
     synthMelodia = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: 'triangle8' },
       envelope: { attack: 0.004, decay: 1.6, sustain: 0.04, release: 1.1 }
-    }).toDestination();
+    }).connect(sortida());
     synthMelodia.volume.value = -6;
   }
   return synthMelodia;
@@ -2490,7 +2499,7 @@ function togglePlayMelodia() {
     carregarPiano();
     const instrument = instrumentMelodia();
     if (!synthMetronom) {
-      synthMetronom = new Tone.MembraneSynth().toDestination();
+      synthMetronom = new Tone.MembraneSynth().connect(sortida());
       synthMetronom.volume.value = -16;
     }
     const ambMetronom = $('mel-metronom').checked;
@@ -2515,7 +2524,7 @@ function togglePlayMelodia() {
 }
 function aturarAudioMelodia() {
   if (!isMelodiaPlaying) return;
-  Tone.Transport.stop();
+  Tone.Transport.stop(); Tone.Transport.cancel(0); tallarSoEnSec();
   if (finalMelodiaId !== null) { Tone.Transport.clear(finalMelodiaId); finalMelodiaId = null; }
   if (melodiaTonePart) { melodiaTonePart.dispose(); melodiaTonePart = null; }
   $('btn-play-melodia').innerHTML = '▶️ Escoltar';
@@ -2527,15 +2536,28 @@ function aturarAudioMelodia() {
    ========================================================= */
 let estTonePart = null, isEstPlaying = false, estFiId = null, synthBaixEst = null, estMarques = [];
 
+let sortidaMestra = null;
+function sortida() { if (!sortidaMestra) sortidaMestra = new Tone.Gain(1).toDestination(); return sortidaMestra; }
+// Talla el so a l'instant: deixa anar les notes i abaixa el volum general un moment
+function tallarSoEnSec() {
+  try {
+    [pianoSampler, synthMelodia, synthBaixEst].forEach(x => { try { if (x && x.releaseAll) x.releaseAll(); } catch (e) { } });
+    Object.values(drumSynths).forEach(d => { try { if (d && d.triggerRelease) d.triggerRelease(); } catch (e) { } });
+    const g = sortida(), ara = Tone.now();
+    g.gain.cancelScheduledValues(ara);
+    g.gain.setValueAtTime(0, ara);
+    g.gain.setValueAtTime(1, ara + 0.08);
+  } catch (e) { }
+}
 function crearDrums() {
   if (drumSynths.BD) return;
-  drumSynths.BD = new Tone.MembraneSynth().toDestination(); drumSynths.BD.volume.value = 2;
-  drumSynths.SN = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: .005, decay: .2, sustain: 0 } }).toDestination(); drumSynths.SN.volume.value = -5;
-  drumSynths.HH = new Tone.MetalSynth({ frequency: 250, envelope: { attack: .001, decay: .05, release: .01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination(); drumSynths.HH.volume.value = -12;
+  drumSynths.BD = new Tone.MembraneSynth().connect(sortida()); drumSynths.BD.volume.value = 2;
+  drumSynths.SN = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: .005, decay: .2, sustain: 0 } }).connect(sortida()); drumSynths.SN.volume.value = -5;
+  drumSynths.HH = new Tone.MetalSynth({ frequency: 250, envelope: { attack: .001, decay: .05, release: .01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).connect(sortida()); drumSynths.HH.volume.value = -12;
 }
 function instrumentBaix() {
   if (!synthBaixEst) {
-    synthBaixEst = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: .01, decay: .35, sustain: .5, release: .4 } }).toDestination();
+    synthBaixEst = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: .01, decay: .35, sustain: .5, release: .4 } }).connect(sortida());
     synthBaixEst.volume.value = -4;
   }
   return synthBaixEst;
@@ -2551,7 +2573,13 @@ function patroBateriaCanco() {
     ? { steps: { HH: fes([0, 1, 2, 3, 4, 5]), SN: fes([3]), BD: fes([0]) }, nom: 'base de 6/8' }
     : { steps: { HH: fes([0, 2, 4, 6, 8, 10, 12, 14]), SN: fes([4, 12]), BD: fes([0, 8]) }, nom: 'base de rock' };
 }
-function tempsPerCompas() { const st = statsCompas(estructura.temps || '4', 1); return st.den === 8 ? st.num / 3 : st.num; }
+// El compàs de l'estructura: '4'=4/4, '3'=3/4, '2'=2/4, '6'=6/8.
+// Als de corxera el pols és la negra amb punt (dos polsos per compàs).
+function compasEstructura() {
+  const t = String(estructura.temps || '4');
+  return t === '6' ? { pulsos: 2, corxeres: true } : { pulsos: parseInt(t) || 4, corxeres: false };
+}
+function tempsPerCompas() { return compasEstructura().pulsos; }
 function duradaCompas() {
   const bpm = Math.max(30, Math.min(260, parseInt(estructura.tempo) || 100));
   return tempsPerCompas() * (60 / bpm);
@@ -2609,7 +2637,7 @@ function togglePlayEstructura(nomesPart) {
   Tone.start().then(() => {
     carregarPiano(); crearDrums();
     const piano = instrumentMelodia(), baix = instrumentBaix();
-    if (!synthMetronom) { synthMetronom = new Tone.MembraneSynth().toDestination(); synthMetronom.volume.value = -16; }
+    if (!synthMetronom) { synthMetronom = new Tone.MembraneSynth().connect(sortida()); synthMetronom.volume.value = -16; }
     const { ev, total, pat } = esdevenimentsEstructura(nomesPart);
     if (!ev.length) { alert('Aquesta part no té acords.'); return; }
     Tone.Transport.bpm.value = 120;                 // els temps ja van en segons
@@ -2627,6 +2655,7 @@ function togglePlayEstructura(nomesPart) {
     Tone.Transport.start();
     isEstPlaying = true;
     $('btn-play-est').innerHTML = '⏹️ Aturar';
+    botonsPartSo(nomesPart);
     $('est-so-info').textContent = `Bateria: ${pat.nom} · ${estructura.tempo || 100} bpm`;
   });
 }
@@ -2639,16 +2668,24 @@ function marcarCompas(m) {
 }
 function aturarEstructura() {
   if (!isEstPlaying) return;
-  Tone.Transport.stop();
+  Tone.Transport.stop(); Tone.Transport.cancel(0); tallarSoEnSec();
   if (estFiId !== null) { Tone.Transport.clear(estFiId); estFiId = null; }
   if (estTonePart) { estTonePart.dispose(); estTonePart = null; }
   document.querySelectorAll('#est-parts .sonant').forEach(el => el.classList.remove('sonant'));
   $('btn-play-est').innerHTML = '▶️ Escoltar la cançó';
+  botonsPartSo(null);
   isEstPlaying = false;
+}
+function botonsPartSo(i) {
+  document.querySelectorAll('#est-parts .est-part').forEach(el => {
+    const b = el.querySelector('.est-part-botons button');
+    if (b) b.innerHTML = (i !== undefined && i !== null && +el.dataset.i === i) ? '⏹' : '▶';
+  });
 }
 
 /* ---- Tecles ---- */
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { aturarEstructura(); aturarBateria(); aturarAudioMelodia(); }
   if ($('modalMelodia').style.display !== 'flex') return;
   if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
   const f = FIGURES.find(x => x.tecla === e.key);
