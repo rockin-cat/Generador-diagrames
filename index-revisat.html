@@ -1318,13 +1318,19 @@ function svgSistemaBaix(ev, opts) {
   const nNotes = notesEv.length, nBarres = ev.length - nNotes;
   const unitats = nNotes + nBarres * 0.5;
   const slot = Math.min(90, (xFi - xIni - 20) / Math.max(unitats, 1));
+  // el sistema acaba just després de l'última nota (si no, l'últim compàs
+  // s'estirava fins al final del full) i es centra dins l'amplada disponible
+  const xFin = Math.min(xFi, Math.round(xIni + unitats * slot + 12));
+  const marge = Math.max(0, Math.round((W - xFin) / 2) - 6);
   let s = `<svg class="svg-diag" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">`;
+  s += `<g transform="translate(${marge} 0)">`;
   // pentagrama
-  for (let i = 0; i < 5; i++) s += `<line x1="10" y1="${staffB - i * gap}" x2="${xFi}" y2="${staffB - i * gap}" stroke="#000" stroke-width="1.2"/>`;
+  for (let i = 0; i < 5; i++) s += `<line x1="10" y1="${staffB - i * gap}" x2="${xFin}" y2="${staffB - i * gap}" stroke="#000" stroke-width="1.2"/>`;
   // tab
-  for (let i = 0; i < 4; i++) s += `<line x1="10" y1="${tabTop + i * tabGap}" x2="${xFi}" y2="${tabTop + i * tabGap}" stroke="#555" stroke-width="1"/>`;
+  for (let i = 0; i < 4; i++) s += `<line x1="10" y1="${tabTop + i * tabGap}" x2="${xFin}" y2="${tabTop + i * tabGap}" stroke="#555" stroke-width="1"/>`;
   s += `<line x1="10" y1="${staffB - 4 * gap}" x2="10" y2="${tabTop + 3 * tabGap}" stroke="#000" stroke-width="2.5"/>`;
-  s += `<line x1="${xFi}" y1="${staffB - 4 * gap}" x2="${xFi}" y2="${staffB}" stroke="#000" stroke-width="1.5"/><line x1="${xFi}" y1="${tabTop}" x2="${xFi}" y2="${tabTop + 3 * tabGap}" stroke="#000" stroke-width="1.5"/>`;
+  // barra final
+  s += `<line x1="${xFin}" y1="${staffB - 4 * gap}" x2="${xFin}" y2="${staffB}" stroke="#000" stroke-width="2.8"/><line x1="${xFin}" y1="${tabTop}" x2="${xFin}" y2="${tabTop + 3 * tabGap}" stroke="#000" stroke-width="2.8"/>`;
   // clau de fa (línia F3 = segona des de dalt)
   const yF = staffB - 3 * gap, cx = 26;
   s += `<path d="M${cx} ${yF} C${cx + 2} ${yF - 13} ${cx + 30} ${yF - 13} ${cx + 30} ${yF + 4} C${cx + 30} ${yF + 20} ${cx + 12} ${yF + 30} ${cx - 2} ${yF + 36}" fill="none" stroke="#000" stroke-width="3.2" stroke-linecap="round"/>`;
@@ -1374,7 +1380,7 @@ function svgSistemaBaix(ev, opts) {
     });
     x += slot;
   });
-  return s + '</svg>';
+  return s + '</g></svg>';
 }
 // Quantes notes caben en un compàs segons la figura que es fa servir
 function notesPerCompas(figura) {
