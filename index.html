@@ -283,6 +283,9 @@ body:not(.mode-est) .nomes-est { display: none !important; }
 .est-grau small { display: block; font-size: 10px; font-weight: normal; opacity: .75; }
 #est-lletra { width: 100%; min-height: 260px; font-family: inherit; font-size: 14px; line-height: 1.45; padding: 12px; border: 1px solid #ccc; border-radius: 6px; resize: vertical; }
 .est-afegir { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 14px; }
+.est-reproductor { align-items: center; gap: 14px; flex-wrap: wrap; background: var(--rk-suau, #f4f1ea); border: 1px solid var(--rk-linia, #e2ddd3); border-radius: 4px; padding: 8px 10px; margin-bottom: 10px; }
+.est-part.sonant .est-part-cap { background: #17a2b8; }
+.cmp-cel.sonant { outline: 3px solid #17a2b8; outline-offset: -3px; }
 .est-part { border: 1px solid #e3e3e3; border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
 .est-part-cap { display: flex; align-items: center; gap: 10px; background: #ff9f1a; padding: 8px 10px; }
 .est-nom { font-weight: bold; text-transform: uppercase; max-width: 260px; background: #fff; }
@@ -525,6 +528,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div class="est-fila">
         <label style="flex:1">Ordre de l'estructura <input id="est-ordre" placeholder="Es genera sol a partir de les parts (ex: Intro – A – B – A – B)" oninput="estOrdreManual()" style="width:100%"></label>
         <button class="btn-accio btn-outline" style="width:auto" onclick="estOrdreAuto()">↻ Automàtic</button>
+      </div>
+      <div class="est-fila est-reproductor">
+        <button class="btn-accio" id="btn-play-est" style="width:auto;background:#17a2b8" onclick="togglePlayEstructura()">▶️ Escoltar la cançó</button>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-acords" checked> Acords</label>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-baix" checked> Baix</label>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-bateria" checked> Bateria</label>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-metronom"> Metrònom</label>
+        <span class="ajuda" id="est-so-info"></span>
       </div>
       <div class="est-afegir"><b style="font-size:13px">Afegir part:</b>
         <button class="mel-btn" onclick="estAfegir('INTRO')">Intro</button>
@@ -1822,13 +1833,9 @@ function audioDisponible() { if (typeof Tone === 'undefined') { alert("No s'ha p
 function togglePlayBateria() {
   if (!audioDisponible()) return;
   if (isPlayingBat) { aturarBateria(); return; }
-  aturarAudioMelodia();
+  aturarAudioMelodia(); aturarEstructura();
   Tone.start().then(() => {
-    if (!drumSynths.BD) {
-      drumSynths.BD = new Tone.MembraneSynth().toDestination(); drumSynths.BD.volume.value = 2;
-      drumSynths.SN = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: .005, decay: .2, sustain: 0 } }).toDestination(); drumSynths.SN.volume.value = -5;
-      drumSynths.HH = new Tone.MetalSynth({ frequency: 250, envelope: { attack: .001, decay: .05, release: .01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination(); drumSynths.HH.volume.value = -12;
-    }
+    crearDrums();
     Tone.Transport.bpm.value = +$('tempo-slider').value;
     const cb = compasBateria();
     drumSeq = new Tone.Sequence((time, step) => {
@@ -2478,7 +2485,7 @@ function instrumentMelodia() {
 function togglePlayMelodia() {
   if (!audioDisponible()) return;
   if (isMelodiaPlaying) { aturarAudioMelodia(); return; }
-  aturarBateria();
+  aturarBateria(); aturarEstructura();
   Tone.start().then(() => {
     carregarPiano();
     const instrument = instrumentMelodia();
@@ -2513,6 +2520,131 @@ function aturarAudioMelodia() {
   if (melodiaTonePart) { melodiaTonePart.dispose(); melodiaTonePart = null; }
   $('btn-play-melodia').innerHTML = '▶️ Escoltar';
   isMelodiaPlaying = false;
+}
+
+/* =========================================================
+   ESCOLTAR L'ESTRUCTURA (acords, baix i bateria dels diagrames triats)
+   ========================================================= */
+let estTonePart = null, isEstPlaying = false, estFiId = null, synthBaixEst = null, estMarques = [];
+
+function crearDrums() {
+  if (drumSynths.BD) return;
+  drumSynths.BD = new Tone.MembraneSynth().toDestination(); drumSynths.BD.volume.value = 2;
+  drumSynths.SN = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: .005, decay: .2, sustain: 0 } }).toDestination(); drumSynths.SN.volume.value = -5;
+  drumSynths.HH = new Tone.MetalSynth({ frequency: 250, envelope: { attack: .001, decay: .05, release: .01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination(); drumSynths.HH.volume.value = -12;
+}
+function instrumentBaix() {
+  if (!synthBaixEst) {
+    synthBaixEst = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: .01, decay: .35, sustain: .5, release: .4 } }).toDestination();
+    synthBaixEst.volume.value = -4;
+  }
+  return synthBaixEst;
+}
+// Patró de bateria: el del seqüenciador si n'hi ha; si no, un de bàsic segons el compàs.
+function patroBateriaCanco() {
+  const seq = items.find(i => i.inst === 'bateria' && i.tipus === 'seq' && i.steps);
+  if (seq) return { steps: seq.steps, nom: seq.nom || 'patró propi' };
+  const ternari = (estructura.temps || '4') === '6';
+  const n = ternari ? 6 : 16;
+  const fes = (l) => Array.from({ length: n }, (_, i) => l.includes(i));
+  return ternari
+    ? { steps: { HH: fes([0, 1, 2, 3, 4, 5]), SN: fes([3]), BD: fes([0]) }, nom: 'base de 6/8' }
+    : { steps: { HH: fes([0, 2, 4, 6, 8, 10, 12, 14]), SN: fes([4, 12]), BD: fes([0, 8]) }, nom: 'base de rock' };
+}
+function tempsPerCompas() { const st = statsCompas(estructura.temps || '4', 1); return st.den === 8 ? st.num / 3 : st.num; }
+function duradaCompas() {
+  const bpm = Math.max(30, Math.min(260, parseInt(estructura.tempo) || 100));
+  return tempsPerCompas() * (60 / bpm);
+}
+// Les parts en l'ordre de l'estructura (si no quadra, les parts tal com estan)
+function partsEnOrdre() {
+  const txt = (estructura.ordre || '').trim();
+  if (txt) {
+    const noms = txt.split(/[–\-\/,]+/).map(t => t.trim()).filter(Boolean);
+    const trobades = noms.map(n => estructura.parts.findIndex(p =>
+      nomCurtPart(p.nom).toLowerCase() === n.toLowerCase() || p.nom.toLowerCase() === n.toLowerCase()));
+    if (trobades.length && trobades.every(i => i >= 0)) return trobades;
+  }
+  return estructura.parts.map((p, i) => i);
+}
+function esdevenimentsEstructura(nomesPart) {
+  const ev = [];
+  const dur = duradaCompas();
+  const pat = patroBateriaCanco();
+  const nPassos = (pat.steps.HH || []).length || 16;
+  const ambAcords = $('est-so-acords').checked, ambBaix = $('est-so-baix').checked;
+  const ambBat = $('est-so-bateria').checked, ambMetro = $('est-so-metronom').checked;
+  const ordre = nomesPart === undefined || nomesPart === null ? partsEnOrdre() : [nomesPart];
+  let t = 0;
+  ordre.forEach(idx => {
+    const p = estructura.parts[idx]; if (!p) return;
+    barsPart(p).forEach((b, j) => {
+      ev.push({ time: t, marca: { part: idx, compas: j } });
+      // acords (i baix) per segments del compàs
+      let pos = 0;
+      segmentsBar(b).forEach(sg => {
+        const d = dur * sg.n / b.div;
+        const pa = sg.acord ? parseAcord(sg.acord) : null;
+        if (pa && ambAcords) ev.push({ time: t + pos, acord: notesTeclat(pa).slice(1), dur: d * 0.95 });
+        if (pa && ambBaix) ev.push({ time: t + pos, baix: NOTES_SOST[pa.semi] + '2', dur: d * 0.9 });
+        pos += d;
+      });
+      // bateria
+      if (ambBat) for (let k = 0; k < nPassos; k++) {
+        const temps = t + dur * k / nPassos;
+        ['HH', 'SN', 'BD'].forEach(inst => { if ((pat.steps[inst] || [])[k]) ev.push({ time: temps, bat: inst }); });
+      }
+      if (ambMetro) for (let k = 0; k < tempsPerCompas(); k++)
+        ev.push({ time: t + dur * k / tempsPerCompas(), metro: k === 0 });
+      t += dur;
+    });
+  });
+  return { ev, total: t, pat };
+}
+function togglePlayEstructura(nomesPart) {
+  if (!audioDisponible()) return;
+  if (isEstPlaying) { const mateixa = estTonePart && estTonePart._part === nomesPart; aturarEstructura(); if (mateixa) return; }
+  if (!estructura.parts.length) { alert('Primer afegeix alguna part amb els seus acords.'); return; }
+  aturarBateria(); aturarAudioMelodia();
+  Tone.start().then(() => {
+    carregarPiano(); crearDrums();
+    const piano = instrumentMelodia(), baix = instrumentBaix();
+    if (!synthMetronom) { synthMetronom = new Tone.MembraneSynth().toDestination(); synthMetronom.volume.value = -16; }
+    const { ev, total, pat } = esdevenimentsEstructura(nomesPart);
+    if (!ev.length) { alert('Aquesta part no té acords.'); return; }
+    Tone.Transport.bpm.value = 120;                 // els temps ja van en segons
+    estTonePart = new Tone.Part((time, e) => {
+      if (e.acord) piano.triggerAttackRelease(e.acord, e.dur, time, 0.6);
+      if (e.baix) baix.triggerAttackRelease(e.baix, e.dur, time, 0.8);
+      if (e.bat === 'HH') drumSynths.HH.triggerAttackRelease('32n', time);
+      if (e.bat === 'SN') drumSynths.SN.triggerAttackRelease('16n', time);
+      if (e.bat === 'BD') drumSynths.BD.triggerAttackRelease('C1', '8n', time);
+      if (e.metro !== undefined) synthMetronom.triggerAttackRelease(e.metro ? 'C3' : 'C4', '16n', time, e.metro ? .9 : .3);
+      if (e.marca) Tone.Draw.schedule(() => marcarCompas(e.marca), time);
+    }, ev.map(e => [e.time, e])).start(0);
+    estTonePart._part = nomesPart;
+    estFiId = Tone.Transport.scheduleOnce(() => Tone.Draw.schedule(aturarEstructura, Tone.now()), total + 0.4);
+    Tone.Transport.start();
+    isEstPlaying = true;
+    $('btn-play-est').innerHTML = '⏹️ Aturar';
+    $('est-so-info').textContent = `Bateria: ${pat.nom} · ${estructura.tempo || 100} bpm`;
+  });
+}
+function marcarCompas(m) {
+  document.querySelectorAll('#est-parts .est-part').forEach(el => el.classList.toggle('sonant', +el.dataset.i === m.part));
+  document.querySelectorAll('#est-parts .cmp-cel.sonant').forEach(el => el.classList.remove('sonant'));
+  const part = document.querySelector(`#est-parts .est-part[data-i="${m.part}"]`);
+  const bar = part && part.querySelectorAll('.cmp-bar')[m.compas];
+  if (bar) bar.querySelectorAll('.cmp-cel').forEach(c => c.classList.add('sonant'));
+}
+function aturarEstructura() {
+  if (!isEstPlaying) return;
+  Tone.Transport.stop();
+  if (estFiId !== null) { Tone.Transport.clear(estFiId); estFiId = null; }
+  if (estTonePart) { estTonePart.dispose(); estTonePart = null; }
+  document.querySelectorAll('#est-parts .sonant').forEach(el => el.classList.remove('sonant'));
+  $('btn-play-est').innerHTML = '▶️ Escoltar la cançó';
+  isEstPlaying = false;
 }
 
 /* ---- Tecles ---- */
@@ -2614,6 +2746,7 @@ function colorGrau(nom, ton, perText) {
 
 /* ---- Mode (pestanyes) ---- */
 function canviarMode(m) {
+  if (typeof aturarEstructura === 'function') aturarEstructura();
   modeActual = m;
   document.body.classList.toggle('mode-est', m === 'est');
   $('tab-diag').classList.toggle('actiu', m === 'diag');
@@ -2865,6 +2998,7 @@ function estRender() {
       <div class="est-part-cap">
         <input class="est-nom" value="${esc(p.nom)}" placeholder="Nom de la part">
         <div class="est-part-botons">
+          <button class="mel-btn" title="Escoltar aquesta part" onclick="togglePlayEstructura(${i})">▶</button>
           <button class="mel-btn" title="Pujar" onclick="estMoure(${i},-1)">↑</button>
           <button class="mel-btn" title="Baixar" onclick="estMoure(${i},1)">↓</button>
           <button class="mel-btn" title="Duplicar" onclick="estDuplicar(${i})">⧉</button>
