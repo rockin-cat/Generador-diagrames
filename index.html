@@ -2141,7 +2141,10 @@ function melSilenciPath(d, x, y) {                   // y = línia central
 function svgSistemaMelodia(els, st, opts) {
   const W = 1000, xFi = W - 14;
   const BASE = opts.base || MEL_BASE;
-  const xIni = opts.clau === 'fa' ? 100 : 78, xClau = opts.clau === 'fa' ? 84 : 62;
+  // amb signe de repetició inicial, les notes comencen una mica més a la dreta
+  // per deixar-li lloc després de la clau i del compàs
+  const xIni = (opts.clau === 'fa' ? 100 : 78) + (opts.repInici ? 34 : 0);
+  const xClau = opts.clau === 'fa' ? 84 : 62;
   const ambTab = !!opts.tab, TAB_GAP = 15;
   const notes = els.filter(e => e.tipus !== 'barra');
   const diats = els.filter(e => e.p).map(e => melParsePitch(e.p).diat);
@@ -2174,7 +2177,13 @@ function svgSistemaMelodia(els, st, opts) {
       + `<circle cx="${xp}" cy="${tabTop + 2 * TAB_GAP}" r="2.8" fill="#000"/>`;
     return r;
   };
-  if (opts.repInici) s += repeticio(10, 1);
+  if (opts.repInici) {
+    // el signe d'obertura va després de la clau i del compàs, com a les partitures
+    const xr = xIni - 30;
+    s += `<line x1="${xr}" y1="${yLinia(0)}" x2="${xr}" y2="${yLinia(4)}" stroke="#000" stroke-width="2.5"/>`;
+    if (ambTab) s += `<line x1="${xr}" y1="${tabTop}" x2="${xr}" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="2.5"/>`;
+    s += repeticio(xr, 1);
+  }
   if (opts.repFi) s += repeticio(xFi, -1);
   if (ambTab) {
     for (let i = 0; i < 4; i++) s += `<line x1="10" y1="${tabTop + i * TAB_GAP}" x2="${xFi}" y2="${tabTop + i * TAB_GAP}" stroke="#555" stroke-width="1"/>`;
@@ -2659,9 +2668,40 @@ function tallarSoEnSec() {
 }
 function crearDrums() {
   if (drumSynths.BD) return;
-  drumSynths.BD = new Tone.MembraneSynth().connect(sortida()); drumSynths.BD.volume.value = 2;
-  drumSynths.SN = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: .005, decay: .2, sustain: 0 } }).connect(sortida()); drumSynths.SN.volume.value = -5;
-  drumSynths.HH = new Tone.MetalSynth({ frequency: 250, envelope: { attack: .001, decay: .05, release: .01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).connect(sortida()); drumSynths.HH.volume.value = -12;
+  const out = sortida();
+  // BOMBO: membrana greu amb cos, amb un filtre perquè no piti
+  const filtreBD = new Tone.Filter({ type: 'lowpass', frequency: 190, rolloff: -24 }).connect(out);
+  drumSynths.BD = new Tone.MembraneSynth({
+    pitchDecay: 0.045, octaves: 6, oscillator: { type: 'sine' },
+    envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.18, attackCurve: 'exponential' }
+  }).connect(filtreBD);
+  drumSynths.BD.volume.value = 1;
+  // CAIXA: dues capes, com una de veritat — el pelat (soroll rosa filtrat) i el parxe (cos afinat)
+  const filtreSN = new Tone.Filter({ type: 'bandpass', frequency: 1900, Q: 0.7 }).connect(out);
+  const pelat = new Tone.NoiseSynth({
+    noise: { type: 'pink' },
+    envelope: { attack: 0.001, decay: 0.16, sustain: 0, release: 0.05 }
+  }).connect(filtreSN);
+  pelat.volume.value = -8;
+  const parxe = new Tone.MembraneSynth({
+    pitchDecay: 0.02, octaves: 3,
+    envelope: { attack: 0.001, decay: 0.11, sustain: 0, release: 0.05 }
+  }).connect(out);
+  parxe.volume.value = -13;
+  drumSynths.SN = {
+    triggerAttackRelease(dur, time) {
+      pelat.triggerAttackRelease(dur, time);
+      parxe.triggerAttackRelease('D2', '32n', time);
+    },
+    triggerRelease() { try { pelat.triggerRelease(); parxe.triggerRelease(); } catch (e) { } }
+  };
+  // XARLES: soroll agut i molt curt (el so metàl·lic d'abans quedava massa electrònic)
+  const filtreHH = new Tone.Filter({ type: 'highpass', frequency: 8500, rolloff: -24 }).connect(out);
+  drumSynths.HH = new Tone.NoiseSynth({
+    noise: { type: 'white' },
+    envelope: { attack: 0.001, decay: 0.035, sustain: 0, release: 0.02 }
+  }).connect(filtreHH);
+  drumSynths.HH.volume.value = -13;
 }
 function instrumentBaix() {
   if (!synthBaixEst) {
