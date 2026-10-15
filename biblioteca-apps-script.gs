@@ -32,7 +32,7 @@ function doGet(e) {
     if (!/\.json$/i.test(f.getName())) continue;
     let info = {};
     try { info = JSON.parse(f.getDescription() || '{}'); } catch (err) { }
-    if (!f.getDescription() || !info.autor) info = Object.assign(infoDelFitxer(f), info.autor ? info : {});   // fitxers pujats a mà a la carpeta
+    if (!f.getDescription() || !info.autor || !info.idioma) info = Object.assign(infoDelFitxer(f), info.autor ? info : {});   // fitxers pujats a mà a la carpeta
     llista.push({ id: f.getId(), nom: f.getName().replace(/\.json$/i, ''), data: f.getLastUpdated().toISOString(), ...info });
   }
   llista.sort((a, b) => b.data.localeCompare(a.data));
@@ -68,7 +68,7 @@ function doPost(e) {
 }
 
 // Si algú arrossega un .json directament a la carpeta, en llegim les dades i les guardem
-// a la descripció perquè la biblioteca en mostri el títol, el nivell i els instruments.
+// a la descripció perquè la biblioteca en mostri el títol, el nivell, l'idioma i els instruments.
 function infoDelFitxer(f) {
   try {
     const c = JSON.parse(f.getBlob().getDataAsString('UTF-8'));
@@ -76,7 +76,7 @@ function infoDelFitxer(f) {
     ['guitarra', 'teclat', 'baix', 'bateria'].forEach(i => { if ((c.items || []).some(it => it.inst === i)) inst.push(i); });
     const e = c.estructura || {};
     if ((e.lletra || '').trim() || (e.parts || []).length) inst.push('estructura');
-    const info = { titol: c.titol || '', artista: c.artista || '', autor: c.autor || '', nivell: c.nivell != null ? String(c.nivell) : '', instruments: inst };
+    const info = { titol: c.titol || '', artista: c.artista || '', autor: c.autor || '', nivell: c.nivell != null ? String(c.nivell) : '', idioma: c.idioma || '', instruments: inst };
     f.setDescription(JSON.stringify(info));
     return info;
   } catch (err) { return {}; }
