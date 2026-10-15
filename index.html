@@ -726,10 +726,11 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <select id="baix-compas" onchange="bxRecalcular();bxRender()" style="width:75px"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option></select></label>
       <span class="mel-grup">
         <button class="mel-btn" onclick="bxAfegirCompas(-1)">− compàs</button>
-        <select id="baix-compassos" onchange="bxRecalcular();bxRender()" style="width:65px"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option><option>8</option><option>12</option><option>16</option></select>
+        <select id="baix-compassos" class="tria-compassos" onchange="bxCanviarCompassos()" style="width:65px"></select>
         <button class="mel-btn" onclick="bxAfegirCompas(1)">+ compàs</button>
       </span>
       <label class="check" style="text-transform:none"><input type="checkbox" id="baix-noms" checked onchange="bxRender()"> Nom de les notes a sobre</label>
+      <label class="check" style="text-transform:none" title="Posa els signes de repetició al principi i al final"><input type="checkbox" id="baix-repeticio" onchange="bxRender()"> 𝄆 Repetició 𝄇</label>
       <span class="ajuda" id="bx-info"></span>
     </div>
     <div id="fretboard-actiu" class="pal-wrapper clicable"></div>
@@ -762,12 +763,13 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <select id="melodia-compas" onchange="melRecalcular();melRender()" style="width:75px"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option></select></label>
       <span class="mel-grup">
         <button class="mel-btn" onclick="melAfegirCompas(-1)">− compàs</button>
-        <select id="melodia-compassos" onchange="melRecalcular();melRender()" style="width:65px"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option><option>8</option><option>12</option><option>16</option></select>
+        <select id="melodia-compassos" class="tria-compassos" onchange="melCanviarCompassos()" style="width:65px"></select>
         <button class="mel-btn" onclick="melAfegirCompas(1)">+ compàs</button>
       </span>
       <button id="btn-play-melodia" class="btn-accio" style="background:#17a2b8;width:auto" onclick="togglePlayMelodia()">▶️ Escoltar</button>
       <label style="text-transform:none;display:flex;align-items:center;gap:6px">Tempo <input type="number" id="tempo-melodia" value="90" min="40" max="200" style="width:70px"></label>
       <label class="check" style="text-transform:none"><input type="checkbox" id="mel-metronom" checked> Metrònom</label>
+      <label class="check" style="text-transform:none" title="Posa els signes de repetició al principi i al final"><input type="checkbox" id="melodia-repeticio" onchange="melRender()"> 𝄆 Repetició 𝄇</label>
       <button class="mel-btn" onclick="if(confirm('Esborrar tota la melodia?')){melGuardarHistoria();melNotes=[];melSel=-1;melRender();}">🗑️ Netejar tot</button>
       <span class="ajuda" id="mel-so"></span>
       <span class="ajuda" id="mel-info"></span>
@@ -1955,6 +1957,39 @@ function construirPal(dades, clicable) {
 /* =========================================================
    MELODIA: editor de pentagrama (estil MuseScore)
    ========================================================= */
+const MAX_COMPASSOS = 32;
+// Els selects de nombre de compassos es generen sencers (1..32): abans només hi
+// havia 1,2,3,4,6,8,12,16 i, en prémer «+ compàs» des de 4, es provava de posar-hi
+// un 5 que no existia com a opció. El select es quedava buit, es llegia com a
+// 1 compàs i s'esborraven totes les notes.
+function omplirSelectsCompassos() {
+  const opts = Array.from({ length: MAX_COMPASSOS }, (_, i) => `<option>${i + 1}</option>`).join('');
+  document.querySelectorAll('select.tria-compassos').forEach(s => {
+    const v = s.value || '2';
+    s.innerHTML = opts;
+    s.value = v;
+  });
+}
+// Canvia el nombre de compassos avisant si es perdrien notes del final
+function canviarCompassos(idSelect, nou, durades, recalcular, render) {
+  const sel = document.getElementById(idSelect);
+  // guardem l'últim valor acceptat: quan es tria del desplegable, sel.value ja
+  // porta el nou i necessitem saber d'on veníem per poder desfer el canvi
+  const ara = parseInt(sel.dataset.ara) || parseInt(sel.value) || 1;
+  nou = Math.max(1, Math.min(MAX_COMPASSOS, nou));
+  if (nou === ara && sel.value === String(ara)) return;
+  const st = statsCompas(document.getElementById(idSelect.replace('-compassos', '-compas')).value, nou);
+  const ocupat = durades();
+  if (ocupat > st.totalPassos &&
+      !confirm(`Amb ${nou} compàs${nou > 1 ? 'os' : ''} no hi caben totes les notes i es perdran les del final.\n\nVols continuar?`)) {
+    sel.value = String(ara);
+    sel.dataset.ara = String(ara);
+    return;
+  }
+  sel.value = String(nou);
+  sel.dataset.ara = String(nou);
+  recalcular(); render();
+}
 function statsCompas(compas, compassos) {
   const [num, den] = String(compas || '4/4').split('/').map(Number);
   const passosPerTemps = den === 8 ? 2 : 4;
@@ -2042,11 +2077,13 @@ function melTriaAlteracio(a) {
   if (n && n.p) { const p = melParsePitch(n.p); melGuardarHistoria(); n.p = melPitchDe(p.diat, melAlt); }
   melRender();
 }
+function melDurades() { return melNotes.reduce((a, n) => a + n.d, 0); }
+function melCanviarCompassos(nou) {
+  canviarCompassos('melodia-compassos', nou === undefined ? (parseInt($('melodia-compassos').value) || 1) : nou,
+    melDurades, melRecalcular, melRender);
+}
 function melAfegirCompas(n) {
-  const c = Math.max(1, Math.min(24, (parseInt($('melodia-compassos').value) || 1) + n));
-  $('melodia-compassos').value = c;
-  melRecalcular();
-  melRender();
+  melCanviarCompassos((parseInt($('melodia-compassos').value) || 1) + n);
 }
 function melStats() { return statsCompas($('melodia-compas').value, $('melodia-compassos').value); }
 
@@ -2126,6 +2163,19 @@ function svgSistemaMelodia(els, st, opts) {
   for (let i = 0; i < 5; i++) s += `<line x1="10" y1="${yLinia(i)}" x2="${xFi}" y2="${yLinia(i)}" stroke="#000" stroke-width="1.2"/>`;
   s += `<line x1="10" y1="${yLinia(0)}" x2="10" y2="${yLinia(4)}" stroke="#000" stroke-width="2.5"/>`;
   s += `<line x1="${xFi}" y1="${yLinia(0)}" x2="${xFi}" y2="${yLinia(4)}" stroke="#000" stroke-width="2.5"/>`;
+  // signes de repetició: línia fina i dos punts al costat de la barra gruixuda
+  const repeticio = (x, cap) => {
+    const xf = x + cap * 7, xp = x + cap * 15;
+    let r = `<line x1="${xf}" y1="${yLinia(0)}" x2="${xf}" y2="${yLinia(4)}" stroke="#000" stroke-width="1.4"/>`
+      + `<circle cx="${xp}" cy="${staffB - 1.5 * MEL_GAP}" r="2.8" fill="#000"/>`
+      + `<circle cx="${xp}" cy="${staffB - 2.5 * MEL_GAP}" r="2.8" fill="#000"/>`;
+    if (ambTab) r += `<line x1="${xf}" y1="${tabTop}" x2="${xf}" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="1.4"/>`
+      + `<circle cx="${xp}" cy="${tabTop + TAB_GAP}" r="2.8" fill="#000"/>`
+      + `<circle cx="${xp}" cy="${tabTop + 2 * TAB_GAP}" r="2.8" fill="#000"/>`;
+    return r;
+  };
+  if (opts.repInici) s += repeticio(10, 1);
+  if (opts.repFi) s += repeticio(xFi, -1);
   if (ambTab) {
     for (let i = 0; i < 4; i++) s += `<line x1="10" y1="${tabTop + i * TAB_GAP}" x2="${xFi}" y2="${tabTop + i * TAB_GAP}" stroke="#555" stroke-width="1"/>`;
     s += `<line x1="10" y1="${tabTop}" x2="10" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="2.5"/><line x1="${xFi}" y1="${tabTop}" x2="${xFi}" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="2.5"/>`;
@@ -2242,7 +2292,8 @@ function svgMelodia(m, opts = {}) {
     act.push(e);
   });
   if (act.length) sistemes.push(act);
-  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st, { ...opts, compas: i === 0 })}</div>`).join('');
+  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st,
+    { ...opts, compas: i === 0, repInici: !!m.repeticio && i === 0, repFi: !!m.repeticio && i === sistemes.length - 1 })}</div>`).join('');
 }
 
 /* ---- Editor ---- */
@@ -2315,7 +2366,7 @@ function melClic(e, svg) {
   melAfegir(melPitchDe(diat, melAlt));
 }
 function dadesMelodiaActual() {
-  return { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value };
+  return { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value, repeticio: $('melodia-repeticio').checked };
 }
 function melConvertirAntic(it) {                    // melodies fetes amb el piano roll antic
   if (!Array.isArray(it.notes) || !it.notes.length || it.notes[0].startCol === undefined) return it;
@@ -2337,6 +2388,8 @@ function obrirEditorMelodia(it = null) {
   $('melodia-titol').value = dades ? dades.nom : '';
   $('melodia-compas').value = dades ? dades.compas : '4/4';
   $('melodia-compassos').value = dades ? dades.compassos : '2';
+  $('melodia-repeticio').checked = !!(dades && dades.repeticio);
+  $('melodia-compassos').dataset.ara = $('melodia-compassos').value;
   melNotes = dades ? JSON.parse(JSON.stringify(dades.notes)) : [];
   melSel = -1; melHistoria = []; melSilenci = false; melAlt = '';
   botoGuardar('btn-guardar-melodia', !!it);
@@ -2386,7 +2439,8 @@ function svgBaixRitme(m, opts = {}) {
   });
   if (act.length) sistemes.push(act);
   const o = bxOpcionsDibuix(m, opts);
-  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st, { ...o, compas: i === 0 })}</div>`).join('');
+  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st,
+    { ...o, compas: i === 0, repInici: !!m.repeticio && i === 0, repFi: !!m.repeticio && i === sistemes.length - 1 })}</div>`).join('');
 }
 function bxTabText(m) {                       // per dibuixar el pal (posicions al mànec)
   const o = { g: '', d: '', a: '', e: '' };
@@ -2449,12 +2503,16 @@ function bxRecalcular() {
   let pos = 0;
   bxNotes = bxNotes.filter(n => { if (pos >= total) return false; n.d = Math.min(n.d, total - pos); pos += n.d; return true; });
 }
+function bxDurades() { return bxNotes.reduce((a, n) => a + n.d, 0); }
+function bxCanviarCompassos(nou) {
+  canviarCompassos('baix-compassos', nou === undefined ? (parseInt($('baix-compassos').value) || 1) : nou,
+    bxDurades, bxRecalcular, bxRender);
+}
 function bxAfegirCompas(n) {
-  $('baix-compassos').value = Math.max(1, Math.min(24, (parseInt($('baix-compassos').value) || 1) + n));
-  bxRecalcular(); bxRender();
+  bxCanviarCompassos((parseInt($('baix-compassos').value) || 1) + n);
 }
 function bxDades() {
-  return { nom: $('baix-titol').value.trim(), notes: JSON.parse(JSON.stringify(bxNotes)), compas: $('baix-compas').value, compassos: $('baix-compassos').value, noms: $('baix-noms').checked };
+  return { nom: $('baix-titol').value.trim(), notes: JSON.parse(JSON.stringify(bxNotes)), compas: $('baix-compas').value, compassos: $('baix-compassos').value, noms: $('baix-noms').checked, repeticio: $('baix-repeticio').checked };
 }
 function bxRender() {
   const m = bxDades();
@@ -2478,6 +2536,8 @@ function obrirEditorBaix(it = null) {
   $('baix-compas').value = (d && d.compas) || '4/4';
   $('baix-compassos').value = (d && d.compassos) || '2';
   $('baix-noms').checked = !(d && d.noms === false);
+  $('baix-repeticio').checked = !!(d && d.repeticio);
+  $('baix-compassos').dataset.ara = $('baix-compassos').value;
   bxNotes = d ? JSON.parse(JSON.stringify(d.notes || [])) : [];
   bxSel = -1; bxHistoria = []; bxSilenci = false; bxFigura = 4; bxPuntet = false;
   botoGuardar('btn-guardar-baix', !!it);
@@ -3735,6 +3795,7 @@ function netejarTot() {
 // Inici
 (function inici() {
   omplirSelectsCelleta();
+  omplirSelectsCompassos();
   // sempre comencem en blanc (també netegem el que el navegador hagi pogut recordar)
   ['titolInput', 'artistaInput', 'acordsInput', 'ordreInput', 'marcaPeuInput', 'marcaPeuEst'].forEach(id => $(id).value = '');
   $('titolMostrat').innerText = 'TÍTOL DE LA CANÇÓ';
