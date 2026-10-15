@@ -417,7 +417,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <div class="nomes-diag" style="display:flex;flex-direction:column;gap:14px">
     <div class="grup-control">
       <label for="acordsInput">Acords de la cançó</label>
-      <input type="text" id="acordsInput" placeholder="Escriu els acords separats per espais" autocomplete="off">
+      <input type="text" id="acordsInput" placeholder="Escriu els acords separats per espais" autocomplete="off" oninput="desar()">
       <p class="ajuda">Majors: <b>D</b> · menors: <b>D-</b> o <b>Dm</b> · power chords: <b>D5</b> · alteracions: <b>F#</b>, <b>Bb</b>.</p>
       <button class="btn-accio" style="background:#6f42c1" onclick="omplirDesDeAcords()">⚡ Omplir guitarra i teclat</button>
     </div>
@@ -2986,6 +2986,7 @@ function estCanvi() {
   estPintarCelles();
   estPintarEstrofes();
   renderTot();                   // els colors dels diagrames depenen de la tonalitat
+  desar();
 }
 function estPintarGraus() {
   const ton = tonalitatEfectiva();
@@ -3791,7 +3792,7 @@ function estatActual() {
     marcaPeu: $('marcaPeuInput').value, marca: $('opt-marca').value, marcaPropia: marcaPropia,
     opcions: { ordre: $('opt-ordre').checked, ilustracio: $('opt-ilustracio').checked, colors: $('opt-colors').checked, inst: $('opt-inst').checked, pal: $('opt-pal').checked, ritmica: $('opt-ritmica').checked, tapar: cordesTapades, celleta: celleta, taparMode: modeTaparActual, taparDoble: $('opt-tapar-doble').checked },
     items: items.map(({ id, ...resta }) => resta),
-    estructura: estructura
+    estructura: estructura, mode: modeActual
   };
 }
 function carregarEstat(e) {
@@ -3810,7 +3811,8 @@ function carregarEstat(e) {
   cordesTapades = parseInt(o.tapar) || 0; taparPreguntat = 'tapar' in o; $('opt-tapar-doble').checked = !!o.taparDoble; modeTapar(o.taparMode === 'visibles' ? 'visibles' : 'tapar');
   estructura = Object.assign(estBuida(), e.estructura || {});
   $('marcaPeuEst').value = $('marcaPeuInput').value;
-  if (modeActual === 'est') estRender();
+  estRender();                     // escriu també to, mode, estil, tempo i lletra
+  if (e.mode === 'est' || e.mode === 'diag') canviarMode(e.mode);
   items = []; idSeq = 1;
   e.items.forEach(it => afegirItem(it, false));
   $('titolMostrat').innerText = textCapcalera() || 'TÍTOL DE LA CANÇÓ';
@@ -3848,6 +3850,9 @@ function netejarTot() {
   celleta = 0; omplirSelectsCelleta(); $('celleta-ajuda').style.display = 'none';
   ['titolInput', 'artistaInput', 'acordsInput', 'ordreInput'].forEach(id => $(id).value = '');
   $('titolMostrat').innerText = 'TÍTOL DE LA CANÇÓ';
+  ultimaSessio = null;
+  try { localStorage.removeItem(CLAU_LOCAL); } catch (e) { }   // si no, en recarregar tornaria
+  $('btn-recuperar').style.display = 'none';
   renderTot();
 }
 
@@ -3855,19 +3860,25 @@ function netejarTot() {
 (function inici() {
   omplirSelectsCelleta();
   omplirSelectsCompassos();
-  // sempre comencem en blanc (també netegem el que el navegador hagi pogut recordar)
   ['titolInput', 'artistaInput', 'acordsInput', 'ordreInput', 'marcaPeuInput', 'marcaPeuEst'].forEach(id => $(id).value = '');
   $('titolMostrat').innerText = 'TÍTOL DE LA CANÇÓ';
-  // l'última cançó es pot recuperar amb el botó
+  // Si es recarrega la pàgina (o es tanca el navegador sense voler), tornem a
+  // deixar la cançó tal com estava. Per començar de zero hi ha «Netejar tot».
   let desada = null;
   try { desada = JSON.parse(localStorage.getItem(CLAU_LOCAL)); } catch (err) { }
   const teEst = desada && desada.estructura && ((desada.estructura.lletra || '').trim() || (desada.estructura.parts || []).length);
+  let recuperada = false;
   if (desada && Array.isArray(desada.items) && (desada.items.length || teEst)) {
     ultimaSessio = desada;
-    $('btn-recuperar').style.display = 'flex';
+    try { recuperada = carregarEstat(desada); } catch (e) { recuperada = false; }
+    if (!recuperada) $('btn-recuperar').style.display = 'flex';
   }
-  renderTot();
+  if (!recuperada) renderTot();
   renderMarca();
+  if (recuperada) {
+    const nom = textCapcalera();
+    avis(`↩️ Hem recuperat ${nom ? '«' + nom + '»' : 'la cançó que tenies'}. Per començar de zero, fes «🗑️ Començar de nou».`, 7000);
+  }
 })();
 </script>
 </body>
