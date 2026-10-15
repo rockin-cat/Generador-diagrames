@@ -716,6 +716,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div id="bx-figures" class="mel-grup"></div>
       <button class="mel-btn" id="bx-puntet" onclick="bxTogglePuntet()" title="Puntet">Puntet</button>
       <button class="mel-btn" id="bx-silenci" onclick="bxAfegir(null)" title="Afegir un silenci">Silenci</button>
+      <button class="mel-btn" id="bx-rep-btn" onclick="bxToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">🔁 Repetició</button>
       <button class="mel-btn" onclick="bxDesfer()">↩︎ Desfer</button>
       <button class="mel-btn" onclick="bxEsborrarSel()">🗑️ Esborrar nota</button>
       <button class="mel-btn" onclick="if(confirm('Esborrar tot el baix?')){bxHistoriaGuardar();bxNotes=[];bxSel=-1;bxRender();}">🗑️ Netejar tot</button>
@@ -730,7 +731,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <button class="mel-btn" onclick="bxAfegirCompas(1)">+ compàs</button>
       </span>
       <label class="check" style="text-transform:none"><input type="checkbox" id="baix-noms" checked onchange="bxRender()"> Nom de les notes a sobre</label>
-      <label class="check" style="text-transform:none" title="Posa els signes de repetició al principi i al final"><input type="checkbox" id="baix-repeticio" onchange="bxRender()"> 𝄆 Repetició 𝄇</label>
+      <input type="checkbox" id="baix-repeticio" hidden>
       <span class="ajuda" id="bx-info"></span>
     </div>
     <div id="fretboard-actiu" class="pal-wrapper clicable"></div>
@@ -750,6 +751,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div id="mel-figures" class="mel-grup"></div>
       <button class="mel-btn" id="mel-puntet" onclick="melTogglePuntet()" title="Puntet (tecla .)">Puntet</button>
       <button class="mel-btn" id="mel-silenci" onclick="melSilenci=!melSilenci;melRender()" title="Silenci (tecla R)">Silenci</button>
+      <button class="mel-btn" id="mel-rep-btn" onclick="melToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">🔁 Repetició</button>
       <div class="mel-grup" id="mel-alteracions">
         <button class="mel-btn" data-alt="#" onclick="melTriaAlteracio('#')">♯</button>
         <button class="mel-btn" data-alt="b" onclick="melTriaAlteracio('b')">♭</button>
@@ -769,7 +771,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <button id="btn-play-melodia" class="btn-accio" style="background:#17a2b8;width:auto" onclick="togglePlayMelodia()">▶️ Escoltar</button>
       <label style="text-transform:none;display:flex;align-items:center;gap:6px">Tempo <input type="number" id="tempo-melodia" value="90" min="40" max="200" style="width:70px"></label>
       <label class="check" style="text-transform:none"><input type="checkbox" id="mel-metronom" checked> Metrònom</label>
-      <label class="check" style="text-transform:none" title="Posa els signes de repetició al principi i al final"><input type="checkbox" id="melodia-repeticio" onchange="melRender()"> 𝄆 Repetició 𝄇</label>
+      <input type="checkbox" id="melodia-repeticio" hidden>
       <button class="mel-btn" onclick="if(confirm('Esborrar tota la melodia?')){melGuardarHistoria();melNotes=[];melSel=-1;melRender();}">🗑️ Netejar tot</button>
       <span class="ajuda" id="mel-so"></span>
       <span class="ajuda" id="mel-info"></span>
@@ -1199,7 +1201,8 @@ function svgTeclat(notes) {
 }
 
 function svgBateria(steps, compas, opcions) {
-  // Mateix disseny que les cartes impreses de ROCKIN (proporció 1558 x 1109)
+  // Mateixa graella i mateixes mides que les cartes impreses de ROCKIN:
+  // mesurat sobre «dors patrons de bateria 17.png» (1558 x 1109).
   const st = steps || { HH: [], SN: [], BD: [] };
   const c = infoCompasBat(compas);
   const o = opcions || {};
@@ -1208,29 +1211,29 @@ function svgBateria(steps, compas, opcions) {
   const fines = pas === 1 && !c.corxeres;              // semicorxeres: graella més atapeïda
   const W = 1558, H = 1109;
   const dx = fines ? 71 : 141.7;
-  // com a les cartes impreses: el cercle del pols és gros i les subdivisions, petites
-  const radi = i => (i % c.per === 0 || !fines) ? 45 : 28;
   const x0 = (W - (cols - 1) * dx) / 2;
-  const Y = { HH: 440, SN: 620, BD: 818 }, C = { HH: '#ffd45e', SN: '#78d14f', BD: '#36b0f0' };
+  const Y = { HH: 392, SN: 633, BD: 832 };
+  const C = { HH: '#FFDE59', SN: '#7ED957', BD: '#38B6FF' };
+  const radi = i => (i % c.per === 0 || !fines) ? 34 : 22;
   let s = `<svg class="svg-diag svg-carta-bat" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Ubuntu, Arial, Helvetica, sans-serif">`;
   s += `<rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>`;
   if (o.num != null) {
-    s += `<rect x="72" y="70" width="86" height="86" fill="#a78759"/>`;
-    s += `<text x="115" y="130" font-size="46" font-weight="bold" fill="#fff" text-anchor="middle">${esc(o.num)}</text>`;
+    s += `<rect x="72" y="72" width="78" height="78" fill="#AD8658"/>`;
+    s += `<text x="111" y="127" font-size="44" font-weight="bold" fill="#fff" text-anchor="middle">${esc(o.num)}</text>`;
   }
-  s += `<image href="${LOGO_ROCKIN}" x="1372" y="72" width="96" height="100" preserveAspectRatio="xMidYMid meet"/>`;
+  s += `<image href="${LOGO_ROCKIN}" x="1400" y="68" width="90" height="94" preserveAspectRatio="xMidYMid meet"/>`;
   for (let col = 0; col < cols; col++) {
     const i = col * pas, x = x0 + col * dx;
     if (i % c.per === 0) {
-      s += `<text x="${x}" y="348" font-size="104" font-weight="bold" text-anchor="middle">${i / c.per + 1}</text>`;
-      s += `<line x1="${x}" y1="483" x2="${x}" y2="818" stroke="#111" stroke-width="9" stroke-linecap="round" stroke-dasharray="9 22"/>`;
+      s += `<text x="${x}" y="346" font-size="104" font-weight="bold" text-anchor="middle">${i / c.per + 1}</text>`;
+      s += `<line x1="${x}" y1="484" x2="${x}" y2="812" stroke="#111" stroke-width="9" stroke-linecap="round" stroke-dasharray="9 22"/>`;
     }
   }
   for (let col = 0; col < cols; col++) {
     const i = col * pas, x = x0 + col * dx;
     ['HH', 'SN', 'BD'].forEach(k => { if ((st[k] || [])[i]) s += `<circle cx="${x}" cy="${Y[k]}" r="${radi(i)}" fill="${C[k]}"/>`; });
   }
-  if (o.titol) s += `<text x="${W / 2}" y="992" font-size="56" font-weight="bold" text-anchor="middle">${esc(o.titol)}</text>`;
+  if (o.titol) s += `<text x="${W / 2}" y="992" font-size="46" font-weight="bold" text-anchor="middle">${esc(o.titol)}</text>`;
   return s + '</svg>';
 }
 
@@ -2077,6 +2080,13 @@ function melTriaAlteracio(a) {
   if (n && n.p) { const p = melParsePitch(n.p); melGuardarHistoria(); n.p = melPitchDe(p.diat, melAlt); }
   melRender();
 }
+function melToggleRepeticio() {
+  const c = $('melodia-repeticio'); c.checked = !c.checked;
+  melSincronitzarRepeticio(); melRender();
+}
+function melSincronitzarRepeticio() {
+  $('mel-rep-btn').classList.toggle('actiu', $('melodia-repeticio').checked);
+}
 function melDurades() { return melNotes.reduce((a, n) => a + n.d, 0); }
 function melCanviarCompassos(nou) {
   canviarCompassos('melodia-compassos', nou === undefined ? (parseInt($('melodia-compassos').value) || 1) : nou,
@@ -2399,6 +2409,7 @@ function obrirEditorMelodia(it = null) {
   $('melodia-compassos').value = dades ? dades.compassos : '2';
   $('melodia-repeticio').checked = !!(dades && dades.repeticio);
   $('melodia-compassos').dataset.ara = $('melodia-compassos').value;
+  melSincronitzarRepeticio();
   melNotes = dades ? JSON.parse(JSON.stringify(dades.notes)) : [];
   melSel = -1; melHistoria = []; melSilenci = false; melAlt = '';
   botoGuardar('btn-guardar-melodia', !!it);
@@ -2512,6 +2523,13 @@ function bxRecalcular() {
   let pos = 0;
   bxNotes = bxNotes.filter(n => { if (pos >= total) return false; n.d = Math.min(n.d, total - pos); pos += n.d; return true; });
 }
+function bxToggleRepeticio() {
+  const c = $('baix-repeticio'); c.checked = !c.checked;
+  bxSincronitzarRepeticio(); bxRender();
+}
+function bxSincronitzarRepeticio() {
+  $('bx-rep-btn').classList.toggle('actiu', $('baix-repeticio').checked);
+}
 function bxDurades() { return bxNotes.reduce((a, n) => a + n.d, 0); }
 function bxCanviarCompassos(nou) {
   canviarCompassos('baix-compassos', nou === undefined ? (parseInt($('baix-compassos').value) || 1) : nou,
@@ -2547,6 +2565,7 @@ function obrirEditorBaix(it = null) {
   $('baix-noms').checked = !(d && d.noms === false);
   $('baix-repeticio').checked = !!(d && d.repeticio);
   $('baix-compassos').dataset.ara = $('baix-compassos').value;
+  bxSincronitzarRepeticio();
   bxNotes = d ? JSON.parse(JSON.stringify(d.notes || [])) : [];
   bxSel = -1; bxHistoria = []; bxSilenci = false; bxFigura = 4; bxPuntet = false;
   botoGuardar('btn-guardar-baix', !!it);
