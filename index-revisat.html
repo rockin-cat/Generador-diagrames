@@ -540,7 +540,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-baix" checked> Baix</label>
         <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-bateria" checked> Bateria</label>
         <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-metronom"> Metrònom</label>
-        <span class="ajuda" id="est-so-info"></span>
+        <span class="ajuda" id="est-so-info"></span><span class="ajuda" id="est-so-kit"></span>
       </div>
       <div class="est-afegir"><b style="font-size:13px">Afegir part:</b>
         <button class="mel-btn" onclick="estAfegir('INTRO')">Intro</button>
@@ -1892,14 +1892,15 @@ function togglePlayBateria() {
   if (isPlayingBat) { aturarBateria(); return; }
   aturarAudioMelodia(); aturarEstructura();
   Tone.start().then(() => {
-    crearDrums();
+    crearDrums(); carregarBateriaReal();
     const cb = compasBateria();
     Tone.Transport.bpm.value = cb.corxeres ? +$('tempo-slider').value * 1.5 : +$('tempo-slider').value;
     drumSeq = new Tone.Sequence((time, step) => {
       const p = llegirPatro();
-      if (p.HH[step]) drumSynths.HH.triggerAttackRelease('32n', time);
-      if (p.SN[step]) drumSynths.SN.triggerAttackRelease('16n', time);
-      if (p.BD[step]) drumSynths.BD.triggerAttackRelease('C1', '8n', time);
+      const durPas = Tone.Time(cb.corxeres ? '8n' : '16n').toSeconds();
+      if (p.HH[step]) tocarBateria('HH', time, step, cb.total, durPas);
+      if (p.SN[step]) tocarBateria('SN', time, step, cb.total, durPas);
+      if (p.BD[step]) tocarBateria('BD', time, step, cb.total, durPas);
       Tone.Draw.schedule(() => {
         document.querySelectorAll('#sequencer-editor .drum-col').forEach(c => c.classList.toggle('playing', +c.dataset.step === step));
       }, time);
@@ -2678,7 +2679,7 @@ function sortida() { if (!sortidaMestra) sortidaMestra = new Tone.Gain(1).toDest
 function tallarSoEnSec() {
   try {
     [pianoSampler, synthMelodia, synthBaixEst].forEach(x => { try { if (x && x.releaseAll) x.releaseAll(); } catch (e) { } });
-    Object.values(drumSynths).forEach(d => { try { if (d && d.triggerRelease) d.triggerRelease(); } catch (e) { } });
+    aturarBateriaSo();
     const g = sortida(), ara = Tone.now();
     g.gain.cancelScheduledValues(ara);
     g.gain.setValueAtTime(0, ara);
@@ -2708,9 +2709,9 @@ function crearDrums() {
   }).connect(out);
   parxe.volume.value = -13;
   drumSynths.SN = {
-    triggerAttackRelease(dur, time) {
-      pelat.triggerAttackRelease(dur, time);
-      parxe.triggerAttackRelease('D2', '32n', time);
+    triggerAttackRelease(dur, time, vel = 1) {
+      pelat.triggerAttackRelease(dur, time, vel);
+      parxe.triggerAttackRelease('D2', '32n', time, vel);
     },
     triggerRelease() { try { pelat.triggerRelease(); parxe.triggerRelease(); } catch (e) { } }
   };
@@ -2721,6 +2722,59 @@ function crearDrums() {
     envelope: { attack: 0.001, decay: 0.035, sustain: 0, release: 0.02 }
   }).connect(filtreHH);
   drumSynths.HH.volume.value = -13;
+}
+
+/* ---- Bateria acústica de veritat (mostres d'una bateria gravada) ----
+   Si no es poden descarregar (sense internet), sona la bateria sintetitzada d'aquí dalt. */
+const URL_BATERIA = 'https://tonejs.github.io/audio/drum-samples/acoustic-kit/';
+const MOSTRES_BATERIA = { BD: 'kick.mp3', SN: 'snare.mp3', HH: 'hihat.mp3' };
+const VOLUM_BATERIA = { BD: -3, SN: 0, HH: 1 };     // equilibri de rock: bombo i caixa al davant
+let kitReal = null, kitLlest = false, kitFallat = false;
+function carregarBateriaReal() {
+  if (kitReal || kitFallat || typeof Tone === 'undefined') return;
+  try {
+    const out = sortida();
+    let carregades = 0;
+    const kit = {};
+    Object.entries(MOSTRES_BATERIA).forEach(([inst, fitxer]) => {
+      kit[inst] = new Tone.Sampler({
+        urls: { C3: fitxer }, baseUrl: URL_BATERIA, release: inst === 'HH' ? 0.06 : 0.4,
+        onload: () => { if (++carregades === 3) { kitLlest = true; estatBateria(); } },
+        onerror: () => { kitFallat = true; kitReal = null; estatBateria(); }
+      }).connect(out);
+      kit[inst].volume.value = VOLUM_BATERIA[inst];
+    });
+    kitReal = kit;
+    setTimeout(() => { if (!kitLlest) { kitFallat = true; estatBateria(); } }, 6000);
+  } catch (e) { kitFallat = true; kitReal = null; }
+}
+function estatBateria() {
+  const el = $('est-so-kit'); if (!el) return;
+  el.textContent = kitLlest ? '🥁 bateria acústica' : kitFallat ? '🥁 bateria sintetitzada' : '🥁 carregant la bateria…';
+}
+// Una bateria de veritat no pica mai dos cops igual: accentuem els temps forts
+// i movem els contratemps una mica, que és el que fa que no soni a caixa de ritmes.
+function tocarBateria(inst, time, pas, nPassos, durPas) {
+  const perPols = nPassos === 6 ? 3 : Math.max(1, Math.round(nPassos / 4));
+  const fort = pas === undefined || pas % perPols === 0;
+  const base = { BD: fort ? 0.98 : 0.84, SN: fort ? 0.95 : 0.78, HH: fort ? 0.82 : 0.48 }[inst];
+  const vel = Math.max(0.2, Math.min(1, base + (Math.random() - 0.5) * 0.1));
+  const retard = inst === 'HH' ? Math.random() * 0.006 : inst === 'SN' ? 0.004 : 0;
+  if (kitLlest && kitReal) {
+    try {
+      // el xarles tancat es talla sol quan arriba el cop següent, com en una bateria de veritat
+      if (inst === 'HH') kitReal.HH.triggerAttackRelease('C3', Math.max(0.08, Math.min(0.4, (durPas || 0.15) * 1.4)), time + retard, vel);
+      else kitReal[inst].triggerAttack('C3', time + retard, vel);
+      return;
+    } catch (e) { }
+  }
+  if (inst === 'HH') drumSynths.HH.triggerAttackRelease('32n', time + retard, vel);
+  else if (inst === 'SN') drumSynths.SN.triggerAttackRelease('16n', time + retard, vel);
+  else drumSynths.BD.triggerAttackRelease('C1', '8n', time, vel);
+}
+function aturarBateriaSo() {
+  if (kitReal) Object.values(kitReal).forEach(s => { try { s.releaseAll(); } catch (e) { } });
+  Object.values(drumSynths).forEach(d => { try { if (d && d.triggerRelease) d.triggerRelease(); } catch (e) { } });
 }
 function instrumentBaix() {
   if (!synthBaixEst) {
@@ -2787,7 +2841,7 @@ function esdevenimentsEstructura(nomesPart) {
       // bateria
       if (ambBat) for (let k = 0; k < nPassos; k++) {
         const temps = t + dur * k / nPassos;
-        ['HH', 'SN', 'BD'].forEach(inst => { if ((pat.steps[inst] || [])[k]) ev.push({ time: temps, bat: inst }); });
+        ['HH', 'SN', 'BD'].forEach(inst => { if ((pat.steps[inst] || [])[k]) ev.push({ time: temps, bat: inst, pas: k, nPassos, durPas: dur / nPassos }); });
       }
       if (ambMetro) for (let k = 0; k < tempsPerCompas(); k++)
         ev.push({ time: t + dur * k / tempsPerCompas(), metro: k === 0 });
@@ -2802,7 +2856,7 @@ function togglePlayEstructura(nomesPart) {
   if (!estructura.parts.length) { alert('Primer afegeix alguna part amb els seus acords.'); return; }
   aturarBateria(); aturarAudioMelodia();
   Tone.start().then(() => {
-    carregarPiano(); crearDrums();
+    carregarPiano(); crearDrums(); carregarBateriaReal();
     const piano = instrumentMelodia(), baix = instrumentBaix();
     if (!synthMetronom) { synthMetronom = new Tone.MembraneSynth().connect(sortida()); synthMetronom.volume.value = -16; }
     const { ev, total, pat } = esdevenimentsEstructura(nomesPart);
@@ -2811,9 +2865,7 @@ function togglePlayEstructura(nomesPart) {
     estTonePart = new Tone.Part((time, e) => {
       if (e.acord) piano.triggerAttackRelease(e.acord, e.dur, time, 0.6);
       if (e.baix) baix.triggerAttackRelease(e.baix, e.dur, time, 0.8);
-      if (e.bat === 'HH') drumSynths.HH.triggerAttackRelease('32n', time);
-      if (e.bat === 'SN') drumSynths.SN.triggerAttackRelease('16n', time);
-      if (e.bat === 'BD') drumSynths.BD.triggerAttackRelease('C1', '8n', time);
+      if (e.bat) tocarBateria(e.bat, time, e.pas, e.nPassos, e.durPas);
       if (e.metro !== undefined) synthMetronom.triggerAttackRelease(e.metro ? 'C3' : 'C4', '16n', time, e.metro ? .9 : .3);
       if (e.marca) Tone.Draw.schedule(() => marcarCompas(e.marca), time);
     }, ev.map(e => [e.time, e])).start(0);
@@ -2823,7 +2875,8 @@ function togglePlayEstructura(nomesPart) {
     isEstPlaying = true;
     $('btn-play-est').innerHTML = '⏹️ Aturar';
     botonsPartSo(nomesPart);
-    $('est-so-info').textContent = `Bateria: ${pat.nom} · ${estructura.tempo || 100} bpm`;
+    $('est-so-info').textContent = `Bateria: ${pat.nom} · ${estructura.tempo || 100} bpm · `;
+    estatBateria();
   });
 }
 function marcarCompas(m) {
