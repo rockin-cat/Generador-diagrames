@@ -214,12 +214,16 @@ body.previsualitzant .pagina { margin: 0 auto 24px; box-shadow: 0 4px 18px rgba(
 .pg-graella { display: grid; height: 100%; align-content: center; justify-items: center; align-items: start; row-gap: 8mm; }
 .pg-cel { display: flex; flex-direction: column; align-items: center; }
 .pg-teclat { display: grid; grid-template-columns: 1fr 1fr; height: 100%; align-content: center; }
-.pg-teclat .pg-cel { padding: 4mm 6mm; justify-content: center; }
+.pg-teclat .pg-cel { padding: 4mm 6mm; justify-content: center; min-height: 0; }
+/* amb tres files cal guanyar alçada: menys marge i el nom una mica més petit */
+.pg-teclat[style*="--files-teclat: 3"] .pg-cel { padding: 1.5mm 5mm; }
+.pg-teclat[style*="--files-teclat: 3"] .pag-nom { font-size: 11pt; margin-bottom: 1.5mm; }
 .pg-teclat .pg-cel.sola { grid-column: 1 / span 2; }
 .pg-teclat .vora-d { border-right: 0.5mm solid #000; }
 .pg-teclat .vora-b { border-bottom: 0.5mm solid #000; }
 .pg-bateria { display: grid; height: 100%; align-content: center; justify-items: center; gap: 8mm; }
-.bat-caixa { border: 0.4mm solid #000; padding: 3mm; display: flex; flex-direction: column; align-items: center; background: #fff; }
+.bat-caixa { padding: 0; display: flex; flex-direction: column; align-items: center; background: #fff; border: 0.3mm solid #ddd; border-radius: 2mm; overflow: hidden; }
+.svg-carta-bat { display: block; width: 100%; }
 .bat-titol { font-weight: bold; font-size: 11pt; margin-top: 2mm; }
 .pg-flux { display: flex; flex-direction: column; gap: 5mm; height: 100%; overflow: hidden; }
 .sistema-baix + .sistema-baix { margin-top: 3mm; }
@@ -248,6 +252,7 @@ body.previsualitzant .pagina { margin: 0 auto 24px; box-shadow: 0 4px 18px rgba(
 .nivell-tria button { flex: 1; padding: 10px 6px; font-size: 15px; border-radius: 10px; }
 .nivell-tria button.actiu { color: #fff; }
 .xip-nivell { display: inline-block; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; color: #fff; margin-right: 6px; vertical-align: 2px; }
+.xip-idioma { display: inline-block; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; color: #444; background: #f1f3f5; border: 1px solid #dee2e6; margin-right: 6px; vertical-align: 2px; }
 .xip { color: #fff; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
 .biblio-buit { padding: 30px; text-align: center; color: #888; }
 #avis { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2c3e50; color: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.3); z-index: 3000; font-size: 14px; display: none; max-width: 90vw; }
@@ -283,6 +288,9 @@ body:not(.mode-est) .nomes-est { display: none !important; }
 .est-grau small { display: block; font-size: 10px; font-weight: normal; opacity: .75; }
 #est-lletra { width: 100%; min-height: 260px; font-family: inherit; font-size: 14px; line-height: 1.45; padding: 12px; border: 1px solid #ccc; border-radius: 6px; resize: vertical; }
 .est-afegir { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 14px; }
+.est-reproductor { align-items: center; gap: 14px; flex-wrap: wrap; background: var(--rk-suau, #f4f1ea); border: 1px solid var(--rk-linia, #e2ddd3); border-radius: 4px; padding: 8px 10px; margin-bottom: 10px; }
+.est-part.sonant .est-part-cap { background: #17a2b8; }
+.cmp-cel.sonant { outline: 3px solid #17a2b8; outline-offset: -3px; }
 .est-part { border: 1px solid #e3e3e3; border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
 .est-part-cap { display: flex; align-items: center; gap: 10px; background: #ff9f1a; padding: 8px 10px; }
 .est-nom { font-weight: bold; text-transform: uppercase; max-width: 260px; background: #fff; }
@@ -320,14 +328,15 @@ body:not(.mode-est) .nomes-est { display: none !important; }
 .est-estrofa { margin-top: 6px; font-size: 13px; padding: 6px; }
 
 /* ---- Pàgines verticals (lletra i estructura) ---- */
-.pagina.vertical { page: vertical; width: 210mm; height: 296.5mm; padding: 16mm 16mm 10mm 30mm; position: relative; }
+.pagina.vertical { width: 210mm; height: 296.5mm; padding: 16mm 16mm 10mm 30mm; position: relative; }
 .pagina.vertical .pv-cos { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
 .pv-peu { flex: 0 0 auto; text-align: center; font-family: 'Times New Roman', serif; font-size: 12pt; padding-top: 3mm; }
 .pagina.vertical.pagina-lletra { padding-left: 20mm; padding-right: 20mm; }
 .lt-titol { font-size: 19pt; margin: 0 0 4mm; }
 .lt-sub { font-size: 13pt; margin-bottom: 7mm; }
-.lt-text { white-space: pre-wrap; font-size: 11pt; line-height: 1.38; }
-.lt-text.dues-col { column-count: 2; column-gap: 10mm; }
+.lt-text { white-space: pre-wrap; font-size: 11pt; line-height: 1.38; flex: 1 1 auto; min-height: 0; column-gap: 10mm; }
+.lt-estrofa { break-inside: avoid; page-break-inside: avoid; }
+.lt-estrofa + .lt-estrofa { margin-top: 1.1em; }
 .est-barra { position: absolute; left: 9mm; top: 16mm; bottom: 26mm; width: 11mm; display: flex; flex-direction: column; border: 0.3mm solid #666; }
 .est-barra div { flex: 1; position: relative; border-top: 0.3mm solid #666; display: flex; align-items: center; justify-content: center; font-size: 11pt; }
 .est-barra div:first-child { border-top: none; }
@@ -378,14 +387,16 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 .hr-div { background: var(--rk-linia); }
 
 @media print {
-  @page vertical { size: A4 portrait; margin: 0; }
-  @page { size: A4 landscape; margin: 0; }
-  html, body { display: block !important; height: auto !important; overflow: visible !important; background: #fff !important; }
+  /* L'orientació la posa ajustarImpressio() a <style id="estil-impressio">:
+     els navegadors (Safari sobretot) no fan cas de @page amb nom, i si el
+     document deia «landscape» les pàgines verticals sortien tallades. */
+  html, body { display: block !important; height: auto !important; overflow: visible !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
   body > *:not(#pagines) { display: none !important; }
   #pagines { display: block !important; position: static !important; visibility: visible !important; padding: 0 !important; background: #fff !important; overflow: visible !important; }
   .pagina { margin: 0 !important; box-shadow: none !important; zoom: 1 !important; }
 }
 </style>
+<style id="estil-impressio">@page { size: A4 landscape; margin: 0; }</style>
 </head>
 <body>
 
@@ -409,7 +420,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <div class="nomes-diag" style="display:flex;flex-direction:column;gap:14px">
     <div class="grup-control">
       <label for="acordsInput">Acords de la cançó</label>
-      <input type="text" id="acordsInput" placeholder="Escriu els acords separats per espais" autocomplete="off">
+      <input type="text" id="acordsInput" placeholder="Escriu els acords separats per espais" autocomplete="off" oninput="desar()">
       <p class="ajuda">Majors: <b>D</b> · menors: <b>D-</b> o <b>Dm</b> · power chords: <b>D5</b> · alteracions: <b>F#</b>, <b>Bb</b>.</p>
       <button class="btn-accio" style="background:#6f42c1" onclick="omplirDesDeAcords()">⚡ Omplir guitarra i teclat</button>
     </div>
@@ -503,7 +514,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div class="est-fila">
         <label>Tonalitat
           <span style="display:flex;gap:6px"><select id="est-to" onchange="estCanvi()">
-            <option value="auto">Automàtica</option><option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>G#</option><option>A</option><option>A#</option><option>B</option>
+            <option value="auto">Automàtica</option><option value="C">Do (C)</option><option value="C#">Do♯ / Re♭ (C#)</option><option value="D">Re (D)</option><option value="D#">Mi♭ (D#)</option><option value="E">Mi (E)</option><option value="F">Fa (F)</option><option value="F#">Fa♯ / Sol♭ (F#)</option><option value="G">Sol (G)</option><option value="G#">La♭ (G#)</option><option value="A">La (A)</option><option value="A#">Si♭ (A#)</option><option value="B">Si (B)</option>
           </select>
           <select id="est-mode" onchange="estCanvi()"><option value="major">major</option><option value="menor">menor</option></select></span></label>
         <label>Compàs <select id="est-temps" onchange="estCanviTemps()"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="6">6/8</option></select></label>
@@ -518,6 +529,16 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <div class="est-card">
       <h3>1. Lletra completa</h3>
       <p class="ajuda" style="margin-bottom:8px">Enganxa-hi la lletra sencera, amb una línia en blanc entre estrofes. Serà la primera pàgina.</p>
+      <div class="est-fila" style="margin-bottom:8px">
+        <label>Columnes en imprimir
+          <select id="est-lletra-cols" onchange="estCanviarColumnes()">
+            <option value="auto">Automàtic</option>
+            <option value="1">1 columna</option>
+            <option value="2">2 columnes</option>
+            <option value="3">3 columnes</option>
+          </select></label>
+        <span class="ajuda" id="est-lletra-info"></span>
+      </div>
       <textarea id="est-lletra" placeholder="Enganxa aquí la lletra de la cançó…" oninput="estLlegirCamps();estPintarEstrofes();desar()"></textarea>
     </div>
     <div class="est-card">
@@ -525,6 +546,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div class="est-fila">
         <label style="flex:1">Ordre de l'estructura <input id="est-ordre" placeholder="Es genera sol a partir de les parts (ex: Intro – A – B – A – B)" oninput="estOrdreManual()" style="width:100%"></label>
         <button class="btn-accio btn-outline" style="width:auto" onclick="estOrdreAuto()">↻ Automàtic</button>
+      </div>
+      <div class="est-fila est-reproductor">
+        <button class="btn-accio" id="btn-play-est" style="width:auto;background:#17a2b8" onclick="togglePlayEstructura()">▶️ Escoltar la cançó</button>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-acords" checked> Acords</label>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-baix" checked> Baix</label>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-bateria" checked> Bateria</label>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="est-so-metronom"> Metrònom</label>
+        <span class="ajuda" id="est-so-info"></span><span class="ajuda" id="est-so-kit"></span>
       </div>
       <div class="est-afegir"><b style="font-size:13px">Afegir part:</b>
         <button class="mel-btn" onclick="estAfegir('INTRO')">Intro</button>
@@ -574,6 +603,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <input type="text" id="comp-autor" style="width:100%;margin:6px 0 14px" autocomplete="off">
     <label style="font-weight:bold">De quin nivell és la cançó?</label>
     <div class="nivell-tria" id="comp-nivell"></div>
+    <label style="font-weight:bold">En quin idioma és?</label>
+    <div class="nivell-tria" id="comp-idioma"></div>
     <div style="display:flex;justify-content:center;gap:10px">
       <button class="btn-accio" style="width:auto" onclick="confirmarCompartir()">📤 Compartir</button>
       <button class="btn-accio btn-outline" style="width:auto" onclick="tancarModal('modalCompartir')">Cancel·lar</button>
@@ -589,6 +620,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <button class="btn-accio btn-outline" style="width:auto" onclick="obrirBiblioteca(true)">🔄</button>
     </div>
     <div class="biblio-nivells" id="biblio-nivells"></div>
+    <div class="biblio-nivells" id="biblio-idiomes"></div>
     <div class="biblio-llista" id="biblio-llista"></div>
     <div style="margin-top:14px;display:flex;justify-content:center;gap:10px">
       <button class="btn-accio btn-outline" onclick="canviarCodiBiblio()">🔑 Canviar codi</button>
@@ -697,6 +729,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div id="bx-figures" class="mel-grup"></div>
       <button class="mel-btn" id="bx-puntet" onclick="bxTogglePuntet()" title="Puntet">Puntet</button>
       <button class="mel-btn" id="bx-silenci" onclick="bxAfegir(null)" title="Afegir un silenci">Silenci</button>
+      <button class="mel-btn" id="bx-rep-btn" onclick="bxToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">🔁 Repetició</button>
       <button class="mel-btn" onclick="bxDesfer()">↩︎ Desfer</button>
       <button class="mel-btn" onclick="bxEsborrarSel()">🗑️ Esborrar nota</button>
       <button class="mel-btn" onclick="if(confirm('Esborrar tot el baix?')){bxHistoriaGuardar();bxNotes=[];bxSel=-1;bxRender();}">🗑️ Netejar tot</button>
@@ -707,10 +740,11 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <select id="baix-compas" onchange="bxRecalcular();bxRender()" style="width:75px"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option></select></label>
       <span class="mel-grup">
         <button class="mel-btn" onclick="bxAfegirCompas(-1)">− compàs</button>
-        <select id="baix-compassos" onchange="bxRecalcular();bxRender()" style="width:65px"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option><option>8</option><option>12</option><option>16</option></select>
+        <select id="baix-compassos" class="tria-compassos" onchange="bxCanviarCompassos()" style="width:65px"></select>
         <button class="mel-btn" onclick="bxAfegirCompas(1)">+ compàs</button>
       </span>
       <label class="check" style="text-transform:none"><input type="checkbox" id="baix-noms" checked onchange="bxRender()"> Nom de les notes a sobre</label>
+      <input type="checkbox" id="baix-repeticio" hidden>
       <span class="ajuda" id="bx-info"></span>
     </div>
     <div id="fretboard-actiu" class="pal-wrapper clicable"></div>
@@ -730,6 +764,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div id="mel-figures" class="mel-grup"></div>
       <button class="mel-btn" id="mel-puntet" onclick="melTogglePuntet()" title="Puntet (tecla .)">Puntet</button>
       <button class="mel-btn" id="mel-silenci" onclick="melSilenci=!melSilenci;melRender()" title="Silenci (tecla R)">Silenci</button>
+      <button class="mel-btn" id="mel-rep-btn" onclick="melToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">🔁 Repetició</button>
       <div class="mel-grup" id="mel-alteracions">
         <button class="mel-btn" data-alt="#" onclick="melTriaAlteracio('#')">♯</button>
         <button class="mel-btn" data-alt="b" onclick="melTriaAlteracio('b')">♭</button>
@@ -743,12 +778,13 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <select id="melodia-compas" onchange="melRecalcular();melRender()" style="width:75px"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option></select></label>
       <span class="mel-grup">
         <button class="mel-btn" onclick="melAfegirCompas(-1)">− compàs</button>
-        <select id="melodia-compassos" onchange="melRecalcular();melRender()" style="width:65px"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option><option>8</option><option>12</option><option>16</option></select>
+        <select id="melodia-compassos" class="tria-compassos" onchange="melCanviarCompassos()" style="width:65px"></select>
         <button class="mel-btn" onclick="melAfegirCompas(1)">+ compàs</button>
       </span>
       <button id="btn-play-melodia" class="btn-accio" style="background:#17a2b8;width:auto" onclick="togglePlayMelodia()">▶️ Escoltar</button>
       <label style="text-transform:none;display:flex;align-items:center;gap:6px">Tempo <input type="number" id="tempo-melodia" value="90" min="40" max="200" style="width:70px"></label>
       <label class="check" style="text-transform:none"><input type="checkbox" id="mel-metronom" checked> Metrònom</label>
+      <input type="checkbox" id="melodia-repeticio" hidden>
       <button class="mel-btn" onclick="if(confirm('Esborrar tota la melodia?')){melGuardarHistoria();melNotes=[];melSel=-1;melRender();}">🗑️ Netejar tot</button>
       <span class="ajuda" id="mel-so"></span>
       <span class="ajuda" id="mel-info"></span>
@@ -1044,7 +1080,7 @@ function contingut(it) {
     div.dataset.tab = '1';
   } else if (it.inst === 'bateria') {
     if (it.tipus === 'img') div.appendChild(imatgeRetallada(`img/dors patrons de bateria ${it.num}.png`, 'bateria'));
-    else div.innerHTML = svgBateria(it.steps, it.compas);
+    else div.innerHTML = svgBateria(it.steps, it.compas, { titol: it.nom });
   }
   return div;
 }
@@ -1177,26 +1213,40 @@ function svgTeclat(notes) {
   return s + '</svg>';
 }
 
-function svgBateria(steps, compas) {
+function svgBateria(steps, compas, opcions) {
+  // Mateixa graella i mateixes mides que les cartes impreses de ROCKIN:
+  // mesurat sobre «dors patrons de bateria 17.png» (1558 x 1109).
   const st = steps || { HH: [], SN: [], BD: [] };
   const c = infoCompasBat(compas);
-  // als compassos de corxera es dibuixen tots els trossos; als altres, només les semicorxeres si n'hi ha
+  const o = opcions || {};
   const us16 = c.corxeres || ['HH', 'SN', 'BD'].some(k => (st[k] || []).some((v, i) => v && i % 2 === 1));
-  const pas = us16 ? 1 : 2, cols = Math.ceil(c.total / pas), dx = us16 ? (c.corxeres ? 38 : 30) : 52, x0 = 40;
-  const W = x0 * 2 + (cols - 1) * dx, H = 200;
-  const Y = { HH: 78, SN: 122, BD: 166 }, C = { HH: '#ffd966', SN: '#7ed957', BD: '#38b6ff' };
-  let s = `<svg class="svg-diag" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">`;
+  const pas = us16 ? 1 : 2, cols = Math.ceil(c.total / pas);
+  const fines = pas === 1 && !c.corxeres;              // semicorxeres: graella més atapeïda
+  const W = 1558, H = 1109;
+  const dx = fines ? 71 : 141.7;
+  const x0 = (W - (cols - 1) * dx) / 2;
+  const Y = { HH: 440, SN: 618, BD: 816 };
+  const C = { HH: '#FFDE59', SN: '#7ED957', BD: '#38B6FF' };
+  const radi = i => (i % c.per === 0 || !fines) ? 41 : 27;
+  let s = `<svg class="svg-diag svg-carta-bat" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Ubuntu, Arial, Helvetica, sans-serif">`;
+  s += `<rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>`;
+  if (o.num != null) {
+    s += `<rect x="72" y="72" width="78" height="78" fill="#AD8658"/>`;
+    s += `<text x="111" y="127" font-size="44" font-weight="bold" fill="#fff" text-anchor="middle">${esc(o.num)}</text>`;
+  }
+  s += `<image href="${LOGO_ROCKIN}" x="1376" y="76" width="86" height="90" preserveAspectRatio="xMidYMid meet"/>`;
   for (let col = 0; col < cols; col++) {
     const i = col * pas, x = x0 + col * dx;
     if (i % c.per === 0) {
-      s += `<text x="${x}" y="42" font-size="26" font-weight="bold" text-anchor="middle">${i / c.per + 1}</text>`;
-      s += `<line x1="${x}" y1="${Y.HH}" x2="${x}" y2="${Y.BD}" stroke="#333" stroke-width="1.6" stroke-dasharray="2 3"/>`;
+      s += `<text x="${x}" y="346" font-size="104" font-weight="bold" text-anchor="middle">${i / c.per + 1}</text>`;
+      s += `<line x1="${x}" y1="484" x2="${x}" y2="812" stroke="#111" stroke-width="8" stroke-linecap="round" stroke-dasharray="6 6"/>`;
     }
   }
   for (let col = 0; col < cols; col++) {
     const i = col * pas, x = x0 + col * dx;
-    ['HH', 'SN', 'BD'].forEach(k => { if ((st[k] || [])[i]) s += `<circle cx="${x}" cy="${Y[k]}" r="${!c.corxeres && us16 && i % 2 ? 8 : 11}" fill="${C[k]}"/>`; });
+    ['HH', 'SN', 'BD'].forEach(k => { if ((st[k] || [])[i]) s += `<circle cx="${x}" cy="${Y[k]}" r="${radi(i)}" fill="${C[k]}"/>`; });
   }
+  if (o.titol) s += `<text x="${W / 2}" y="994" font-size="46" font-weight="bold" text-anchor="middle">${esc(o.titol)}</text>`;
   return s + '</svg>';
 }
 
@@ -1286,13 +1336,19 @@ function svgSistemaBaix(ev, opts) {
   const nNotes = notesEv.length, nBarres = ev.length - nNotes;
   const unitats = nNotes + nBarres * 0.5;
   const slot = Math.min(90, (xFi - xIni - 20) / Math.max(unitats, 1));
+  // el sistema acaba just després de l'última nota (si no, l'últim compàs
+  // s'estirava fins al final del full) i es centra dins l'amplada disponible
+  const xFin = Math.min(xFi, Math.round(xIni + unitats * slot + 12));
+  const marge = Math.max(0, Math.round((W - xFin) / 2) - 6);
   let s = `<svg class="svg-diag" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">`;
+  s += `<g transform="translate(${marge} 0)">`;
   // pentagrama
-  for (let i = 0; i < 5; i++) s += `<line x1="10" y1="${staffB - i * gap}" x2="${xFi}" y2="${staffB - i * gap}" stroke="#000" stroke-width="1.2"/>`;
+  for (let i = 0; i < 5; i++) s += `<line x1="10" y1="${staffB - i * gap}" x2="${xFin}" y2="${staffB - i * gap}" stroke="#000" stroke-width="1.2"/>`;
   // tab
-  for (let i = 0; i < 4; i++) s += `<line x1="10" y1="${tabTop + i * tabGap}" x2="${xFi}" y2="${tabTop + i * tabGap}" stroke="#555" stroke-width="1"/>`;
+  for (let i = 0; i < 4; i++) s += `<line x1="10" y1="${tabTop + i * tabGap}" x2="${xFin}" y2="${tabTop + i * tabGap}" stroke="#555" stroke-width="1"/>`;
   s += `<line x1="10" y1="${staffB - 4 * gap}" x2="10" y2="${tabTop + 3 * tabGap}" stroke="#000" stroke-width="2.5"/>`;
-  s += `<line x1="${xFi}" y1="${staffB - 4 * gap}" x2="${xFi}" y2="${staffB}" stroke="#000" stroke-width="1.5"/><line x1="${xFi}" y1="${tabTop}" x2="${xFi}" y2="${tabTop + 3 * tabGap}" stroke="#000" stroke-width="1.5"/>`;
+  // barra final
+  s += `<line x1="${xFin}" y1="${staffB - 4 * gap}" x2="${xFin}" y2="${staffB}" stroke="#000" stroke-width="2.8"/><line x1="${xFin}" y1="${tabTop}" x2="${xFin}" y2="${tabTop + 3 * tabGap}" stroke="#000" stroke-width="2.8"/>`;
   // clau de fa (línia F3 = segona des de dalt)
   const yF = staffB - 3 * gap, cx = 26;
   s += `<path d="M${cx} ${yF} C${cx + 2} ${yF - 13} ${cx + 30} ${yF - 13} ${cx + 30} ${yF + 4} C${cx + 30} ${yF + 20} ${cx + 12} ${yF + 30} ${cx - 2} ${yF + 36}" fill="none" stroke="#000" stroke-width="3.2" stroke-linecap="round"/>`;
@@ -1342,10 +1398,28 @@ function svgSistemaBaix(ev, opts) {
     });
     x += slot;
   });
-  return s + '</svg>';
+  return s + '</g></svg>';
+}
+// Quantes notes caben en un compàs segons la figura que es fa servir
+function notesPerCompas(figura) {
+  const dur = { rodona: 4, blanca: 2, negra: 1, corxera: 0.5, semicorxera: 0.25 }[figura] || 1;
+  const c = typeof compasEstructura === 'function' ? compasEstructura() : { pulsos: 4 };
+  const polsos = c.corxeres ? c.pulsos * 3 / 2 : c.pulsos;   // 6/8 → 3 corxeres per pols
+  return Math.max(1, Math.round(polsos / dur));
+}
+// Si la tabulatura no porta cap barra escrita, les repartim pel compàs de la cançó
+function ambBarresDeCompas(ev, figura) {
+  if (ev.some(e => e.barra)) return ev;
+  const cada = notesPerCompas(figura);
+  const out = []; let n = 0;
+  ev.forEach(e => {
+    if (n && n % cada === 0) out.push({ col: e.col - 0.5, barra: true });
+    out.push(e); n++;
+  });
+  return out;
 }
 function htmlBaix(d, maxNotes = 16) {
-  const ev = llegirEventsTab(d);
+  const ev = ambBarresDeCompas(llegirEventsTab(d), d.figura || 'negra');
   if (!ev.some(e => !e.barra)) return '<p class="ajuda">(Tabulatura buida)</p>';
   const opts = { figura: d.figura || 'negra', noms: d.noms !== false, colors: $('opt-colors').checked ? colorsPerNota() : {} };
   return sistemesBaix(ev, maxNotes).map(sis => `<div class="sistema-baix">${svgSistemaBaix(sis, opts)}</div>`).join('');
@@ -1435,7 +1509,10 @@ function paginesGuitarraCos(llista, colors) {
     const g = document.createElement('div');
     g.className = 'pg-graella';
     g.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    const altMax = files === 1 ? 105 : 64;
+    // l'alçada de cada casella és el diagrama + el nom de l'acord + la nota de sota:
+    // amb dues files cal descomptar-ho tot, si no la primera fila se'n va fora del full
+    const EXTRA = 19, GAP = 8;
+    const altMax = files === 1 ? 105 : Math.floor((MM.bodyH - GAP) / 2 - EXTRA);
     const ample = Math.min((MM.bodyW / cols) - 8, altMax * 910 / 1115, 70);
     grup.forEach(it => {
       const c = document.createElement('div');
@@ -1449,17 +1526,19 @@ function paginesGuitarraCos(llista, colors) {
   });
 }
 function paginesTeclat(llista, colors) {
-  trossos(llista, 4).forEach(grup => {
+  trossos(llista, 6).forEach(grup => {
     const cos = novaPagina('teclat', true);
     const g = document.createElement('div');
     g.className = 'pg-teclat';
-    const n = grup.length;
+    const n = grup.length, filesT = Math.ceil(n / 2);
+    g.style.setProperty('--files-teclat', filesT);
     grup.forEach((it, i) => {
       const c = document.createElement('div');
       c.className = 'pg-cel';
-      if (n === 1 || (n === 3 && i === 2)) { c.classList.add('sola'); c.style.width = '60%'; c.style.justifySelf = 'center'; }
-      if (n >= 2 && i % 2 === 0 && !(n === 3 && i === 2)) c.classList.add('vora-d');
-      if (n >= 3 && i < 2) c.classList.add('vora-b');
+      const sola = n === 1 || (n % 2 === 1 && i === n - 1);
+      if (sola) { c.classList.add('sola'); c.style.width = '60%'; c.style.justifySelf = 'center'; }
+      if (n >= 2 && i % 2 === 0 && !sola) c.classList.add('vora-d');
+      if (i < (filesT - 1) * 2) c.classList.add('vora-b');
       c.appendChild(nomAcordPagina(it, colors));
       c.appendChild(contingut(it));
       g.appendChild(c);
@@ -1480,7 +1559,6 @@ function paginesBateria(llista) {
       b.className = 'bat-caixa';
       b.style.width = (n > 2 ? Math.min(ample, 72 * 1558 / 1109) : ample) + 'mm';
       b.appendChild(contingut(it));
-      if (it.tipus === 'seq' && it.nom) { const t = document.createElement('div'); t.className = 'bat-titol'; t.textContent = it.nom; b.appendChild(t); }
       g.appendChild(b);
     });
     cos.appendChild(g);
@@ -1491,7 +1569,6 @@ function caixaBateria(it, ampleMm) {
   b.className = 'bat-caixa';
   b.style.width = ampleMm + 'mm';
   b.appendChild(contingut(it));
-  if (it.tipus === 'seq' && it.nom) { const t = document.createElement('div'); t.className = 'bat-titol'; t.textContent = it.nom; b.appendChild(t); }
   return b;
 }
 function paginesRitmica(baix, bat) {
@@ -1505,7 +1582,7 @@ function paginesRitmica(baix, bat) {
     blocs.push(b);
   });
   const porFila = bat.length === 1 ? 1 : bat.length === 2 || bat.length === 4 ? 2 : 3;
-  const ample = porFila === 1 ? 95 : porFila === 2 ? 85 : 66;
+  const ample = porFila === 1 ? 118 : porFila === 2 ? 92 : 68;
   trossos(bat, porFila).forEach((fila, i) => {
     const b = document.createElement('div'); b.className = 'bloc-flux';
     if (i === 0) b.innerHTML = '<div class="subtitol-pag">🥁 Bateria</div>';
@@ -1556,7 +1633,15 @@ function paginesFlux(llista, inst) {
   });
 }
 
+// Diagrames = A4 horitzontal; lletra i estructura = A4 vertical. Ho escrivim
+// en una sola regla @page perquè tots els navegadors la facin servir.
+function ajustarImpressio() {
+  const el = document.getElementById('estil-impressio'); if (!el) return;
+  const regla = `@page { size: A4 ${modeActual === 'est' ? 'portrait' : 'landscape'}; margin: 0; }`;
+  if (el.textContent !== regla) el.textContent = regla;
+}
 function construirPagines() {
+  ajustarImpressio();
   const pag = $('pagines');
   const previ = document.body.classList.contains('previsualitzant');
   pag.innerHTML = '';
@@ -1795,7 +1880,7 @@ function pintarSequenciador(steps) {
   }
   $('sequencer-editor').innerHTML = h + '</div>';
 }
-function canviarCompasBateria() { pintarSequenciador(llegirPatro()); }
+function canviarCompasBateria() { pintarSequenciador(llegirPatro()); updateTempo($('tempo-slider').value); }
 function llegirPatro() {
   const c = compasBateria();
   const st = { HH: Array(c.total).fill(false), SN: Array(c.total).fill(false), BD: Array(c.total).fill(false) };
@@ -1805,7 +1890,11 @@ function llegirPatro() {
 function obrirEditorBateria(it = null) {
   batEditant = it ? it.id : null;
   $('bat-titol').value = it ? it.nom : '';
-  $('bat-compas').value = (it && it.compas) || '4/4';
+  $('bat-compas').value = (it && it.compas) || (estructura.temps === '6' ? '6/8' : '4/4');
+  // el tempo per defecte és el de la cançó, perquè soni igual que a l'estructura
+  const tc = parseInt(estructura.tempo);
+  if (tc) { $('tempo-slider').value = Math.max(+$('tempo-slider').min, Math.min(+$('tempo-slider').max, tc)); }
+  updateTempo($('tempo-slider').value);
   pintarSequenciador(it ? it.steps : null);
   botoGuardar('btn-guardar-bat', !!it);
   obrirModal('modalBateria');
@@ -1822,20 +1911,17 @@ function audioDisponible() { if (typeof Tone === 'undefined') { alert("No s'ha p
 function togglePlayBateria() {
   if (!audioDisponible()) return;
   if (isPlayingBat) { aturarBateria(); return; }
-  aturarAudioMelodia();
+  aturarAudioMelodia(); aturarEstructura();
   Tone.start().then(() => {
-    if (!drumSynths.BD) {
-      drumSynths.BD = new Tone.MembraneSynth().toDestination(); drumSynths.BD.volume.value = 2;
-      drumSynths.SN = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: .005, decay: .2, sustain: 0 } }).toDestination(); drumSynths.SN.volume.value = -5;
-      drumSynths.HH = new Tone.MetalSynth({ frequency: 250, envelope: { attack: .001, decay: .05, release: .01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination(); drumSynths.HH.volume.value = -12;
-    }
-    Tone.Transport.bpm.value = +$('tempo-slider').value;
+    crearDrums(); carregarBateriaReal();
     const cb = compasBateria();
+    Tone.Transport.bpm.value = cb.corxeres ? +$('tempo-slider').value * 1.5 : +$('tempo-slider').value;
     drumSeq = new Tone.Sequence((time, step) => {
       const p = llegirPatro();
-      if (p.HH[step]) drumSynths.HH.triggerAttackRelease('32n', time);
-      if (p.SN[step]) drumSynths.SN.triggerAttackRelease('16n', time);
-      if (p.BD[step]) drumSynths.BD.triggerAttackRelease('C1', '8n', time);
+      const durPas = Tone.Time(cb.corxeres ? '8n' : '16n').toSeconds();
+      if (p.HH[step]) tocarBateria('HH', time, step, cb.total, durPas);
+      if (p.SN[step]) tocarBateria('SN', time, step, cb.total, durPas);
+      if (p.BD[step]) tocarBateria('BD', time, step, cb.total, durPas);
       Tone.Draw.schedule(() => {
         document.querySelectorAll('#sequencer-editor .drum-col').forEach(c => c.classList.toggle('playing', +c.dataset.step === step));
       }, time);
@@ -1850,14 +1936,19 @@ function togglePlayBateria() {
 }
 function aturarBateria() {
   if (!isPlayingBat) return;
-  Tone.Transport.stop();
+  Tone.Transport.stop(); Tone.Transport.cancel(0); tallarSoEnSec();
   if (finalBateriaId !== null) { Tone.Transport.clear(finalBateriaId); finalBateriaId = null; }
   if (drumSeq) { drumSeq.dispose(); drumSeq = null; }
   document.querySelectorAll('#sequencer-editor .drum-col').forEach(c => c.classList.remove('playing'));
   $('btn-play-bat').innerHTML = '▶️ Escoltar';
   isPlayingBat = false;
 }
-function updateTempo(v) { $('tempo-valor').innerText = v + ' BPM'; if (typeof Tone !== 'undefined') Tone.Transport.bpm.value = +v; }
+function updateTempo(v) {
+  const c = typeof compasBateria === 'function' ? compasBateria() : { corxeres: false };
+  $('tempo-valor').innerText = v + ' BPM' + (c.corxeres ? ' (negra amb punt)' : '');
+  // als compassos de corxera el pols és la negra amb punt: tres corxeres per pols
+  if (typeof Tone !== 'undefined') Tone.Transport.bpm.value = c.corxeres ? +v * 1.5 : +v;
+}
 
 /* =========================================================
    BAIX
@@ -1891,6 +1982,39 @@ function construirPal(dades, clicable) {
 /* =========================================================
    MELODIA: editor de pentagrama (estil MuseScore)
    ========================================================= */
+const MAX_COMPASSOS = 32;
+// Els selects de nombre de compassos es generen sencers (1..32): abans només hi
+// havia 1,2,3,4,6,8,12,16 i, en prémer «+ compàs» des de 4, es provava de posar-hi
+// un 5 que no existia com a opció. El select es quedava buit, es llegia com a
+// 1 compàs i s'esborraven totes les notes.
+function omplirSelectsCompassos() {
+  const opts = Array.from({ length: MAX_COMPASSOS }, (_, i) => `<option>${i + 1}</option>`).join('');
+  document.querySelectorAll('select.tria-compassos').forEach(s => {
+    const v = s.value || '2';
+    s.innerHTML = opts;
+    s.value = v;
+  });
+}
+// Canvia el nombre de compassos avisant si es perdrien notes del final
+function canviarCompassos(idSelect, nou, durades, recalcular, render) {
+  const sel = document.getElementById(idSelect);
+  // guardem l'últim valor acceptat: quan es tria del desplegable, sel.value ja
+  // porta el nou i necessitem saber d'on veníem per poder desfer el canvi
+  const ara = parseInt(sel.dataset.ara) || parseInt(sel.value) || 1;
+  nou = Math.max(1, Math.min(MAX_COMPASSOS, nou));
+  if (nou === ara && sel.value === String(ara)) return;
+  const st = statsCompas(document.getElementById(idSelect.replace('-compassos', '-compas')).value, nou);
+  const ocupat = durades();
+  if (ocupat > st.totalPassos &&
+      !confirm(`Amb ${nou} compàs${nou > 1 ? 'os' : ''} no hi caben totes les notes i es perdran les del final.\n\nVols continuar?`)) {
+    sel.value = String(ara);
+    sel.dataset.ara = String(ara);
+    return;
+  }
+  sel.value = String(nou);
+  sel.dataset.ara = String(nou);
+  recalcular(); render();
+}
 function statsCompas(compas, compassos) {
   const [num, den] = String(compas || '4/4').split('/').map(Number);
   const passosPerTemps = den === 8 ? 2 : 4;
@@ -1978,11 +2102,20 @@ function melTriaAlteracio(a) {
   if (n && n.p) { const p = melParsePitch(n.p); melGuardarHistoria(); n.p = melPitchDe(p.diat, melAlt); }
   melRender();
 }
+function melToggleRepeticio() {
+  const c = $('melodia-repeticio'); c.checked = !c.checked;
+  melSincronitzarRepeticio(); melRender();
+}
+function melSincronitzarRepeticio() {
+  $('mel-rep-btn').classList.toggle('actiu', $('melodia-repeticio').checked);
+}
+function melDurades() { return melNotes.reduce((a, n) => a + n.d, 0); }
+function melCanviarCompassos(nou) {
+  canviarCompassos('melodia-compassos', nou === undefined ? (parseInt($('melodia-compassos').value) || 1) : nou,
+    melDurades, melRecalcular, melRender);
+}
 function melAfegirCompas(n) {
-  const c = Math.max(1, Math.min(24, (parseInt($('melodia-compassos').value) || 1) + n));
-  $('melodia-compassos').value = c;
-  melRecalcular();
-  melRender();
+  melCanviarCompassos((parseInt($('melodia-compassos').value) || 1) + n);
 }
 function melStats() { return statsCompas($('melodia-compas').value, $('melodia-compassos').value); }
 
@@ -2040,7 +2173,10 @@ function melSilenciPath(d, x, y) {                   // y = línia central
 function svgSistemaMelodia(els, st, opts) {
   const W = 1000, xFi = W - 14;
   const BASE = opts.base || MEL_BASE;
-  const xIni = opts.clau === 'fa' ? 100 : 78, xClau = opts.clau === 'fa' ? 84 : 62;
+  // amb signe de repetició inicial, les notes comencen una mica més a la dreta
+  // per deixar-li lloc després de la clau i del compàs
+  const xIni = (opts.clau === 'fa' ? 100 : 78) + (opts.repInici ? 34 : 0);
+  const xClau = opts.clau === 'fa' ? 84 : 62;
   const ambTab = !!opts.tab, TAB_GAP = 15;
   const notes = els.filter(e => e.tipus !== 'barra');
   const diats = els.filter(e => e.p).map(e => melParsePitch(e.p).diat);
@@ -2062,6 +2198,25 @@ function svgSistemaMelodia(els, st, opts) {
   for (let i = 0; i < 5; i++) s += `<line x1="10" y1="${yLinia(i)}" x2="${xFi}" y2="${yLinia(i)}" stroke="#000" stroke-width="1.2"/>`;
   s += `<line x1="10" y1="${yLinia(0)}" x2="10" y2="${yLinia(4)}" stroke="#000" stroke-width="2.5"/>`;
   s += `<line x1="${xFi}" y1="${yLinia(0)}" x2="${xFi}" y2="${yLinia(4)}" stroke="#000" stroke-width="2.5"/>`;
+  // signes de repetició: línia fina i dos punts al costat de la barra gruixuda
+  const repeticio = (x, cap) => {
+    const xf = x + cap * 7, xp = x + cap * 15;
+    let r = `<line x1="${xf}" y1="${yLinia(0)}" x2="${xf}" y2="${yLinia(4)}" stroke="#000" stroke-width="1.4"/>`
+      + `<circle cx="${xp}" cy="${staffB - 1.5 * MEL_GAP}" r="2.8" fill="#000"/>`
+      + `<circle cx="${xp}" cy="${staffB - 2.5 * MEL_GAP}" r="2.8" fill="#000"/>`;
+    if (ambTab) r += `<line x1="${xf}" y1="${tabTop}" x2="${xf}" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="1.4"/>`
+      + `<circle cx="${xp}" cy="${tabTop + TAB_GAP}" r="2.8" fill="#000"/>`
+      + `<circle cx="${xp}" cy="${tabTop + 2 * TAB_GAP}" r="2.8" fill="#000"/>`;
+    return r;
+  };
+  if (opts.repInici) {
+    // el signe d'obertura va després de la clau i del compàs, com a les partitures
+    const xr = xIni - 30;
+    s += `<line x1="${xr}" y1="${yLinia(0)}" x2="${xr}" y2="${yLinia(4)}" stroke="#000" stroke-width="2.5"/>`;
+    if (ambTab) s += `<line x1="${xr}" y1="${tabTop}" x2="${xr}" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="2.5"/>`;
+    s += repeticio(xr, 1);
+  }
+  if (opts.repFi) s += repeticio(xFi, -1);
   if (ambTab) {
     for (let i = 0; i < 4; i++) s += `<line x1="10" y1="${tabTop + i * TAB_GAP}" x2="${xFi}" y2="${tabTop + i * TAB_GAP}" stroke="#555" stroke-width="1"/>`;
     s += `<line x1="10" y1="${tabTop}" x2="10" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="2.5"/><line x1="${xFi}" y1="${tabTop}" x2="${xFi}" y2="${tabTop + 3 * TAB_GAP}" stroke="#000" stroke-width="2.5"/>`;
@@ -2178,7 +2333,8 @@ function svgMelodia(m, opts = {}) {
     act.push(e);
   });
   if (act.length) sistemes.push(act);
-  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st, { ...opts, compas: i === 0 })}</div>`).join('');
+  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st,
+    { ...opts, compas: i === 0, repInici: !!m.repeticio && i === 0, repFi: !!m.repeticio && i === sistemes.length - 1 })}</div>`).join('');
 }
 
 /* ---- Editor ---- */
@@ -2251,7 +2407,7 @@ function melClic(e, svg) {
   melAfegir(melPitchDe(diat, melAlt));
 }
 function dadesMelodiaActual() {
-  return { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value };
+  return { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value, repeticio: $('melodia-repeticio').checked };
 }
 function melConvertirAntic(it) {                    // melodies fetes amb el piano roll antic
   if (!Array.isArray(it.notes) || !it.notes.length || it.notes[0].startCol === undefined) return it;
@@ -2273,6 +2429,9 @@ function obrirEditorMelodia(it = null) {
   $('melodia-titol').value = dades ? dades.nom : '';
   $('melodia-compas').value = dades ? dades.compas : '4/4';
   $('melodia-compassos').value = dades ? dades.compassos : '2';
+  $('melodia-repeticio').checked = !!(dades && dades.repeticio);
+  $('melodia-compassos').dataset.ara = $('melodia-compassos').value;
+  melSincronitzarRepeticio();
   melNotes = dades ? JSON.parse(JSON.stringify(dades.notes)) : [];
   melSel = -1; melHistoria = []; melSilenci = false; melAlt = '';
   botoGuardar('btn-guardar-melodia', !!it);
@@ -2322,7 +2481,8 @@ function svgBaixRitme(m, opts = {}) {
   });
   if (act.length) sistemes.push(act);
   const o = bxOpcionsDibuix(m, opts);
-  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st, { ...o, compas: i === 0 })}</div>`).join('');
+  return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st,
+    { ...o, compas: i === 0, repInici: !!m.repeticio && i === 0, repFi: !!m.repeticio && i === sistemes.length - 1 })}</div>`).join('');
 }
 function bxTabText(m) {                       // per dibuixar el pal (posicions al mànec)
   const o = { g: '', d: '', a: '', e: '' };
@@ -2385,12 +2545,23 @@ function bxRecalcular() {
   let pos = 0;
   bxNotes = bxNotes.filter(n => { if (pos >= total) return false; n.d = Math.min(n.d, total - pos); pos += n.d; return true; });
 }
+function bxToggleRepeticio() {
+  const c = $('baix-repeticio'); c.checked = !c.checked;
+  bxSincronitzarRepeticio(); bxRender();
+}
+function bxSincronitzarRepeticio() {
+  $('bx-rep-btn').classList.toggle('actiu', $('baix-repeticio').checked);
+}
+function bxDurades() { return bxNotes.reduce((a, n) => a + n.d, 0); }
+function bxCanviarCompassos(nou) {
+  canviarCompassos('baix-compassos', nou === undefined ? (parseInt($('baix-compassos').value) || 1) : nou,
+    bxDurades, bxRecalcular, bxRender);
+}
 function bxAfegirCompas(n) {
-  $('baix-compassos').value = Math.max(1, Math.min(24, (parseInt($('baix-compassos').value) || 1) + n));
-  bxRecalcular(); bxRender();
+  bxCanviarCompassos((parseInt($('baix-compassos').value) || 1) + n);
 }
 function bxDades() {
-  return { nom: $('baix-titol').value.trim(), notes: JSON.parse(JSON.stringify(bxNotes)), compas: $('baix-compas').value, compassos: $('baix-compassos').value, noms: $('baix-noms').checked };
+  return { nom: $('baix-titol').value.trim(), notes: JSON.parse(JSON.stringify(bxNotes)), compas: $('baix-compas').value, compassos: $('baix-compassos').value, noms: $('baix-noms').checked, repeticio: $('baix-repeticio').checked };
 }
 function bxRender() {
   const m = bxDades();
@@ -2414,6 +2585,9 @@ function obrirEditorBaix(it = null) {
   $('baix-compas').value = (d && d.compas) || '4/4';
   $('baix-compassos').value = (d && d.compassos) || '2';
   $('baix-noms').checked = !(d && d.noms === false);
+  $('baix-repeticio').checked = !!(d && d.repeticio);
+  $('baix-compassos').dataset.ara = $('baix-compassos').value;
+  bxSincronitzarRepeticio();
   bxNotes = d ? JSON.parse(JSON.stringify(d.notes || [])) : [];
   bxSel = -1; bxHistoria = []; bxSilenci = false; bxFigura = 4; bxPuntet = false;
   botoGuardar('btn-guardar-baix', !!it);
@@ -2454,7 +2628,7 @@ function carregarPiano() {
       release: 1.1,
       onload: () => { pianoLlest = true; estatPiano(); },
       onerror: () => { pianoFallat = true; pianoSampler = null; estatPiano(); }
-    }).toDestination();
+    }).connect(sortida());
     pianoSampler.volume.value = -4;
     setTimeout(() => { if (!pianoLlest) { pianoFallat = true; estatPiano(); } }, 4000);
   } catch (e) { pianoFallat = true; }
@@ -2470,7 +2644,7 @@ function instrumentMelodia() {
     synthMelodia = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: 'triangle8' },
       envelope: { attack: 0.004, decay: 1.6, sustain: 0.04, release: 1.1 }
-    }).toDestination();
+    }).connect(sortida());
     synthMelodia.volume.value = -6;
   }
   return synthMelodia;
@@ -2478,12 +2652,12 @@ function instrumentMelodia() {
 function togglePlayMelodia() {
   if (!audioDisponible()) return;
   if (isMelodiaPlaying) { aturarAudioMelodia(); return; }
-  aturarBateria();
+  aturarBateria(); aturarEstructura();
   Tone.start().then(() => {
     carregarPiano();
     const instrument = instrumentMelodia();
     if (!synthMetronom) {
-      synthMetronom = new Tone.MembraneSynth().toDestination();
+      synthMetronom = new Tone.MembraneSynth().connect(sortida());
       synthMetronom.volume.value = -16;
     }
     const ambMetronom = $('mel-metronom').checked;
@@ -2508,15 +2682,251 @@ function togglePlayMelodia() {
 }
 function aturarAudioMelodia() {
   if (!isMelodiaPlaying) return;
-  Tone.Transport.stop();
+  Tone.Transport.stop(); Tone.Transport.cancel(0); tallarSoEnSec();
   if (finalMelodiaId !== null) { Tone.Transport.clear(finalMelodiaId); finalMelodiaId = null; }
   if (melodiaTonePart) { melodiaTonePart.dispose(); melodiaTonePart = null; }
   $('btn-play-melodia').innerHTML = '▶️ Escoltar';
   isMelodiaPlaying = false;
 }
 
+/* =========================================================
+   ESCOLTAR L'ESTRUCTURA (acords, baix i bateria dels diagrames triats)
+   ========================================================= */
+let estTonePart = null, isEstPlaying = false, estFiId = null, synthBaixEst = null, estMarques = [];
+
+let sortidaMestra = null;
+function sortida() { if (!sortidaMestra) sortidaMestra = new Tone.Gain(1).toDestination(); return sortidaMestra; }
+// Talla el so a l'instant: deixa anar les notes i abaixa el volum general un moment
+function tallarSoEnSec() {
+  try {
+    [pianoSampler, synthMelodia, synthBaixEst].forEach(x => { try { if (x && x.releaseAll) x.releaseAll(); } catch (e) { } });
+    aturarBateriaSo();
+    const g = sortida(), ara = Tone.now();
+    g.gain.cancelScheduledValues(ara);
+    g.gain.setValueAtTime(0, ara);
+    g.gain.setValueAtTime(1, ara + 0.08);
+  } catch (e) { }
+}
+function crearDrums() {
+  if (drumSynths.BD) return;
+  const out = sortida();
+  // BOMBO: membrana greu amb cos, amb un filtre perquè no piti
+  const filtreBD = new Tone.Filter({ type: 'lowpass', frequency: 190, rolloff: -24 }).connect(out);
+  drumSynths.BD = new Tone.MembraneSynth({
+    pitchDecay: 0.045, octaves: 6, oscillator: { type: 'sine' },
+    envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.18, attackCurve: 'exponential' }
+  }).connect(filtreBD);
+  drumSynths.BD.volume.value = 1;
+  // CAIXA: dues capes, com una de veritat — el pelat (soroll rosa filtrat) i el parxe (cos afinat)
+  const filtreSN = new Tone.Filter({ type: 'bandpass', frequency: 1900, Q: 0.7 }).connect(out);
+  const pelat = new Tone.NoiseSynth({
+    noise: { type: 'pink' },
+    envelope: { attack: 0.001, decay: 0.16, sustain: 0, release: 0.05 }
+  }).connect(filtreSN);
+  pelat.volume.value = -8;
+  const parxe = new Tone.MembraneSynth({
+    pitchDecay: 0.02, octaves: 3,
+    envelope: { attack: 0.001, decay: 0.11, sustain: 0, release: 0.05 }
+  }).connect(out);
+  parxe.volume.value = -13;
+  drumSynths.SN = {
+    triggerAttackRelease(dur, time, vel = 1) {
+      pelat.triggerAttackRelease(dur, time, vel);
+      parxe.triggerAttackRelease('D2', '32n', time, vel);
+    },
+    triggerRelease() { try { pelat.triggerRelease(); parxe.triggerRelease(); } catch (e) { } }
+  };
+  // XARLES: soroll agut i molt curt (el so metàl·lic d'abans quedava massa electrònic)
+  const filtreHH = new Tone.Filter({ type: 'highpass', frequency: 8500, rolloff: -24 }).connect(out);
+  drumSynths.HH = new Tone.NoiseSynth({
+    noise: { type: 'white' },
+    envelope: { attack: 0.001, decay: 0.035, sustain: 0, release: 0.02 }
+  }).connect(filtreHH);
+  drumSynths.HH.volume.value = -13;
+}
+
+/* ---- Bateria acústica de veritat (mostres d'una bateria gravada) ----
+   Si no es poden descarregar (sense internet), sona la bateria sintetitzada d'aquí dalt. */
+const URL_BATERIA = 'https://tonejs.github.io/audio/drum-samples/acoustic-kit/';
+const MOSTRES_BATERIA = { BD: 'kick.mp3', SN: 'snare.mp3', HH: 'hihat.mp3' };
+const VOLUM_BATERIA = { BD: -3, SN: 0, HH: 1 };     // equilibri de rock: bombo i caixa al davant
+let kitReal = null, kitLlest = false, kitFallat = false;
+function carregarBateriaReal() {
+  if (kitReal || kitFallat || typeof Tone === 'undefined') return;
+  try {
+    const out = sortida();
+    let carregades = 0;
+    const kit = {};
+    Object.entries(MOSTRES_BATERIA).forEach(([inst, fitxer]) => {
+      kit[inst] = new Tone.Sampler({
+        urls: { C3: fitxer }, baseUrl: URL_BATERIA, release: inst === 'HH' ? 0.06 : 0.4,
+        onload: () => { if (++carregades === 3) { kitLlest = true; estatBateria(); } },
+        onerror: () => { kitFallat = true; kitReal = null; estatBateria(); }
+      }).connect(out);
+      kit[inst].volume.value = VOLUM_BATERIA[inst];
+    });
+    kitReal = kit;
+    setTimeout(() => { if (!kitLlest) { kitFallat = true; estatBateria(); } }, 6000);
+  } catch (e) { kitFallat = true; kitReal = null; }
+}
+function estatBateria() {
+  const el = $('est-so-kit'); if (!el) return;
+  el.textContent = kitLlest ? '🥁 bateria acústica' : kitFallat ? '🥁 bateria sintetitzada' : '🥁 carregant la bateria…';
+}
+// Una bateria de veritat no pica mai dos cops igual: accentuem els temps forts
+// i movem els contratemps una mica, que és el que fa que no soni a caixa de ritmes.
+function tocarBateria(inst, time, pas, nPassos, durPas) {
+  const perPols = nPassos === 6 ? 3 : Math.max(1, Math.round(nPassos / 4));
+  const fort = pas === undefined || pas % perPols === 0;
+  const base = { BD: fort ? 0.98 : 0.84, SN: fort ? 0.95 : 0.78, HH: fort ? 0.82 : 0.48 }[inst];
+  const vel = Math.max(0.2, Math.min(1, base + (Math.random() - 0.5) * 0.1));
+  const retard = inst === 'HH' ? Math.random() * 0.006 : inst === 'SN' ? 0.004 : 0;
+  if (kitLlest && kitReal) {
+    try {
+      // el xarles tancat es talla sol quan arriba el cop següent, com en una bateria de veritat
+      if (inst === 'HH') kitReal.HH.triggerAttackRelease('C3', Math.max(0.08, Math.min(0.4, (durPas || 0.15) * 1.4)), time + retard, vel);
+      else kitReal[inst].triggerAttack('C3', time + retard, vel);
+      return;
+    } catch (e) { }
+  }
+  if (inst === 'HH') drumSynths.HH.triggerAttackRelease('32n', time + retard, vel);
+  else if (inst === 'SN') drumSynths.SN.triggerAttackRelease('16n', time + retard, vel);
+  else drumSynths.BD.triggerAttackRelease('C1', '8n', time, vel);
+}
+function aturarBateriaSo() {
+  if (kitReal) Object.values(kitReal).forEach(s => { try { s.releaseAll(); } catch (e) { } });
+  Object.values(drumSynths).forEach(d => { try { if (d && d.triggerRelease) d.triggerRelease(); } catch (e) { } });
+}
+function instrumentBaix() {
+  if (!synthBaixEst) {
+    synthBaixEst = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle' }, envelope: { attack: .01, decay: .35, sustain: .5, release: .4 } }).connect(sortida());
+    synthBaixEst.volume.value = -4;
+  }
+  return synthBaixEst;
+}
+// Patró de bateria: el del seqüenciador si n'hi ha; si no, un de bàsic segons el compàs.
+function patroBateriaCanco() {
+  const seq = items.find(i => i.inst === 'bateria' && i.tipus === 'seq' && i.steps);
+  if (seq) return { steps: seq.steps, nom: seq.nom || 'patró propi' };
+  const ternari = (estructura.temps || '4') === '6';
+  const n = ternari ? 6 : 16;
+  const fes = (l) => Array.from({ length: n }, (_, i) => l.includes(i));
+  return ternari
+    ? { steps: { HH: fes([0, 1, 2, 3, 4, 5]), SN: fes([3]), BD: fes([0]) }, nom: 'base de 6/8' }
+    : { steps: { HH: fes([0, 2, 4, 6, 8, 10, 12, 14]), SN: fes([4, 12]), BD: fes([0, 8]) }, nom: 'base de rock' };
+}
+// El compàs de l'estructura: '4'=4/4, '3'=3/4, '2'=2/4, '6'=6/8.
+// Als de corxera el pols és la negra amb punt (dos polsos per compàs).
+function compasEstructura() {
+  const t = String(estructura.temps || '4');
+  return t === '6' ? { pulsos: 2, corxeres: true } : { pulsos: parseInt(t) || 4, corxeres: false };
+}
+function tempsPerCompas() { return compasEstructura().pulsos; }
+function duradaCompas() {
+  const bpm = Math.max(30, Math.min(260, parseInt(estructura.tempo) || 100));
+  return tempsPerCompas() * (60 / bpm);
+}
+// Les parts en l'ordre de l'estructura (si no quadra, les parts tal com estan)
+function partsEnOrdre() {
+  const txt = (estructura.ordre || '').trim();
+  if (txt) {
+    const noms = txt.split(/[–\-\/,]+/).map(t => t.trim()).filter(Boolean);
+    const trobades = noms.map(n => estructura.parts.findIndex(p =>
+      nomCurtPart(p.nom).toLowerCase() === n.toLowerCase() || p.nom.toLowerCase() === n.toLowerCase()));
+    if (trobades.length && trobades.every(i => i >= 0)) return trobades;
+  }
+  return estructura.parts.map((p, i) => i);
+}
+function esdevenimentsEstructura(nomesPart) {
+  const ev = [];
+  const dur = duradaCompas();
+  const pat = patroBateriaCanco();
+  const nPassos = (pat.steps.HH || []).length || 16;
+  const ambAcords = $('est-so-acords').checked, ambBaix = $('est-so-baix').checked;
+  const ambBat = $('est-so-bateria').checked, ambMetro = $('est-so-metronom').checked;
+  const ordre = nomesPart === undefined || nomesPart === null ? partsEnOrdre() : [nomesPart];
+  let t = 0;
+  ordre.forEach(idx => {
+    const p = estructura.parts[idx]; if (!p) return;
+    barsPart(p).forEach((b, j) => {
+      ev.push({ time: t, marca: { part: idx, compas: j } });
+      // acords (i baix) per segments del compàs
+      let pos = 0;
+      segmentsBar(b).forEach(sg => {
+        const d = dur * sg.n / b.div;
+        const pa = sg.acord ? parseAcord(sg.acord) : null;
+        if (pa && ambAcords) ev.push({ time: t + pos, acord: notesTeclat(pa).slice(1), dur: d * 0.95 });
+        if (pa && ambBaix) ev.push({ time: t + pos, baix: NOTES_SOST[pa.semi] + '2', dur: d * 0.9 });
+        pos += d;
+      });
+      // bateria
+      if (ambBat) for (let k = 0; k < nPassos; k++) {
+        const temps = t + dur * k / nPassos;
+        ['HH', 'SN', 'BD'].forEach(inst => { if ((pat.steps[inst] || [])[k]) ev.push({ time: temps, bat: inst, pas: k, nPassos, durPas: dur / nPassos }); });
+      }
+      if (ambMetro) for (let k = 0; k < tempsPerCompas(); k++)
+        ev.push({ time: t + dur * k / tempsPerCompas(), metro: k === 0 });
+      t += dur;
+    });
+  });
+  return { ev, total: t, pat };
+}
+function togglePlayEstructura(nomesPart) {
+  if (!audioDisponible()) return;
+  if (isEstPlaying) { const mateixa = estTonePart && estTonePart._part === nomesPart; aturarEstructura(); if (mateixa) return; }
+  if (!estructura.parts.length) { alert('Primer afegeix alguna part amb els seus acords.'); return; }
+  aturarBateria(); aturarAudioMelodia();
+  Tone.start().then(() => {
+    carregarPiano(); crearDrums(); carregarBateriaReal();
+    const piano = instrumentMelodia(), baix = instrumentBaix();
+    if (!synthMetronom) { synthMetronom = new Tone.MembraneSynth().connect(sortida()); synthMetronom.volume.value = -16; }
+    const { ev, total, pat } = esdevenimentsEstructura(nomesPart);
+    if (!ev.length) { alert('Aquesta part no té acords.'); return; }
+    Tone.Transport.bpm.value = 120;                 // els temps ja van en segons
+    estTonePart = new Tone.Part((time, e) => {
+      if (e.acord) piano.triggerAttackRelease(e.acord, e.dur, time, 0.6);
+      if (e.baix) baix.triggerAttackRelease(e.baix, e.dur, time, 0.8);
+      if (e.bat) tocarBateria(e.bat, time, e.pas, e.nPassos, e.durPas);
+      if (e.metro !== undefined) synthMetronom.triggerAttackRelease(e.metro ? 'C3' : 'C4', '16n', time, e.metro ? .9 : .3);
+      if (e.marca) Tone.Draw.schedule(() => marcarCompas(e.marca), time);
+    }, ev.map(e => [e.time, e])).start(0);
+    estTonePart._part = nomesPart;
+    estFiId = Tone.Transport.scheduleOnce(() => Tone.Draw.schedule(aturarEstructura, Tone.now()), total + 0.4);
+    Tone.Transport.start();
+    isEstPlaying = true;
+    $('btn-play-est').innerHTML = '⏹️ Aturar';
+    botonsPartSo(nomesPart);
+    $('est-so-info').textContent = `Bateria: ${pat.nom} · ${estructura.tempo || 100} bpm · `;
+    estatBateria();
+  });
+}
+function marcarCompas(m) {
+  document.querySelectorAll('#est-parts .est-part').forEach(el => el.classList.toggle('sonant', +el.dataset.i === m.part));
+  document.querySelectorAll('#est-parts .cmp-cel.sonant').forEach(el => el.classList.remove('sonant'));
+  const part = document.querySelector(`#est-parts .est-part[data-i="${m.part}"]`);
+  const bar = part && part.querySelectorAll('.cmp-bar')[m.compas];
+  if (bar) bar.querySelectorAll('.cmp-cel').forEach(c => c.classList.add('sonant'));
+}
+function aturarEstructura() {
+  if (!isEstPlaying) return;
+  Tone.Transport.stop(); Tone.Transport.cancel(0); tallarSoEnSec();
+  if (estFiId !== null) { Tone.Transport.clear(estFiId); estFiId = null; }
+  if (estTonePart) { estTonePart.dispose(); estTonePart = null; }
+  document.querySelectorAll('#est-parts .sonant').forEach(el => el.classList.remove('sonant'));
+  $('btn-play-est').innerHTML = '▶️ Escoltar la cançó';
+  botonsPartSo(null);
+  isEstPlaying = false;
+}
+function botonsPartSo(i) {
+  document.querySelectorAll('#est-parts .est-part').forEach(el => {
+    const b = el.querySelector('.est-part-botons button');
+    if (b) b.innerHTML = (i !== undefined && i !== null && +el.dataset.i === i) ? '⏹' : '▶';
+  });
+}
+
 /* ---- Tecles ---- */
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { aturarEstructura(); aturarBateria(); aturarAudioMelodia(); }
   if ($('modalMelodia').style.display !== 'flex') return;
   if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
   const f = FIGURES.find(x => x.tecla === e.key);
@@ -2535,7 +2945,7 @@ document.addEventListener('keydown', e => {
    LLETRA I ESTRUCTURA (com al llibre de Temes)
    ========================================================= */
 let modeActual = 'diag';
-function estBuida() { return { to: 'auto', mode: 'major', temps: '4', estil: '', tempo: '', ordre: '', ordreAuto: true, lletra: '', parts: [] }; }
+function estBuida() { return { to: 'auto', mode: 'major', temps: '4', estil: '', tempo: '', ordre: '', ordreAuto: true, lletra: '', lletraCols: 'auto', parts: [] }; }
 let estructura = estBuida();
 
 // Colors per grau (els del llibre). Índex = grau de la tonalitat major (o de la relativa major).
@@ -2603,7 +3013,10 @@ function detectarTonalitat(acords) {
   return millor;
 }
 function tonalitatEfectiva() {
-  if (estructura.to && estructura.to !== 'auto') return { tonica: NOTES_SOST.indexOf(estructura.to), mode: estructura.mode };
+  if (estructura.to && estructura.to !== 'auto') {
+    const a = arrelAcord(estructura.to);   // accepta tant Bb com A#
+    if (a) return { tonica: a.semi, mode: estructura.mode };
+  }
   return detectarTonalitat(totsElsAcords());
 }
 function colorGrau(nom, ton, perText) {
@@ -2614,7 +3027,9 @@ function colorGrau(nom, ton, perText) {
 
 /* ---- Mode (pestanyes) ---- */
 function canviarMode(m) {
+  if (typeof aturarEstructura === 'function') aturarEstructura();
   modeActual = m;
+  ajustarImpressio();
   document.body.classList.toggle('mode-est', m === 'est');
   $('tab-diag').classList.toggle('actiu', m === 'diag');
   $('tab-est').classList.toggle('actiu', m === 'est');
@@ -2631,11 +3046,13 @@ function estLlegirCamps() {
   estructura.to = $('est-to').value; estructura.mode = $('est-mode').value;
   estructura.estil = $('est-estil').value; estructura.tempo = $('est-tempo').value;
   estructura.lletra = $('est-lletra').value;
+  estructura.lletraCols = $('est-lletra-cols').value;
 }
 function estEscriureCamps() {
   $('est-to').value = estructura.to || 'auto'; $('est-mode').value = estructura.mode || 'major';
   $('est-estil').value = estructura.estil || ''; $('est-tempo').value = estructura.tempo || '';
   $('est-lletra').value = estructura.lletra || ''; $('est-ordre').value = estructura.ordre || '';
+  $('est-lletra-cols').value = ['1', '2', '3'].includes(String(estructura.lletraCols)) ? String(estructura.lletraCols) : 'auto';
   $('est-temps').value = String(estructura.temps || '4');
 }
 function estCanvi() {
@@ -2646,6 +3063,7 @@ function estCanvi() {
   estPintarCelles();
   estPintarEstrofes();
   renderTot();                   // els colors dels diagrames depenen de la tonalitat
+  desar();
 }
 function estPintarGraus() {
   const ton = tonalitatEfectiva();
@@ -2865,6 +3283,7 @@ function estRender() {
       <div class="est-part-cap">
         <input class="est-nom" value="${esc(p.nom)}" placeholder="Nom de la part">
         <div class="est-part-botons">
+          <button class="mel-btn" title="Escoltar aquesta part" onclick="togglePlayEstructura(${i})">▶</button>
           <button class="mel-btn" title="Pujar" onclick="estMoure(${i},-1)">↑</button>
           <button class="mel-btn" title="Baixar" onclick="estMoure(${i},1)">↓</button>
           <button class="mel-btn" title="Duplicar" onclick="estDuplicar(${i})">⧉</button>
@@ -2962,19 +3381,87 @@ function novaPaginaVertical(num, ambBarra, ton) {
   $('pagines').appendChild(p);
   return p.querySelector('.pv-cos');
 }
-function paginesLletra(num) {
+// Combinacions (columnes, mida) que provem, de més llegible a més atapeïda
+const FORMATS_LLETRA = {
+  '1': [[1, 11], [1, 10.5], [1, 10], [1, 9.5], [1, 9]],
+  '2': [[2, 11], [2, 10.5], [2, 10], [2, 9.5], [2, 9], [2, 8.5]],
+  '3': [[3, 10], [3, 9.5], [3, 9], [3, 8.5], [3, 8]]
+};
+FORMATS_LLETRA.auto = [...FORMATS_LLETRA['1'].slice(0, 3), ...FORMATS_LLETRA['2'], ...FORMATS_LLETRA['3']];
+function estrofesLletra() {
+  return estructura.lletra.replace(/\r/g, '').trim().split(/\n\s*\n/).map(e => e.replace(/\s+$/, '')).filter(e => e.trim());
+}
+function novaPaginaLletra(num, cont) {
   const cos = novaPaginaVertical(num, false);
   cos.parentElement.classList.add('pagina-lletra');
-  cos.innerHTML = `<h1 class="lt-titol">${esc(titolCurt())}</h1><div class="lt-sub">(lletra)</div><div class="lt-text"></div>`;
-  const txt = cos.querySelector('.lt-text');
-  txt.textContent = estructura.lletra.replace(/\r/g, '').trim();
-  const cap = () => cos.scrollHeight > cos.clientHeight + 2;
-  // primer provem d'encabir-ho en una columna amb lletra una mica més petita; si no, dues columnes
-  for (const mida of [10.5, 10, 9.5]) { if (!cap()) break; txt.style.fontSize = mida + 'pt'; }
-  if (cap()) { txt.classList.add('dues-col'); txt.style.fontSize = '10.5pt'; }
-  for (const mida of [10, 9, 8]) { if (!cap()) break; txt.style.fontSize = mida + 'pt'; }
-  return num + 1;
+  cos.innerHTML = `<h1 class="lt-titol">${esc(titolCurt())}</h1><div class="lt-sub">(lletra${cont ? ', cont.' : ''})</div><div class="lt-text"></div>`;
+  return cos.querySelector('.lt-text');
 }
+// Quantes estrofes caben en aquesta pàgina amb aquestes columnes i aquesta mida.
+// Amb columnes, el text que no hi cap no fa créixer l'alçada sinó l'amplada:
+// per això mirem també scrollWidth (abans es tallava sense avisar).
+function omplirLletra(txt, estrofes, cols, mida) {
+  txt.style.columnCount = cols;
+  txt.style.fontSize = mida + 'pt';
+  txt.innerHTML = '';
+  const vessa = () => txt.scrollWidth > txt.clientWidth + 2 || txt.scrollHeight > txt.clientHeight + 2;
+  let posades = 0;
+  for (const e of estrofes) {
+    const d = document.createElement('div');
+    d.className = 'lt-estrofa';
+    d.textContent = e;
+    txt.appendChild(d);
+    if (vessa()) { txt.removeChild(d); break; }
+    posades++;
+  }
+  return posades;
+}
+function paginesLletra(num) {
+  const estrofes = estrofesLletra();
+  if (!estrofes.length) return num;
+  const tria = ['1', '2', '3'].includes(String(estructura.lletraCols)) ? String(estructura.lletraCols) : 'auto';
+  const formats = FORMATS_LLETRA[tria];
+  let txt = novaPaginaLletra(num, false);
+  // 1 · busquem el primer format on hi cap TOTA la lletra en una sola pàgina
+  let millor = formats[formats.length - 1], totes = false;
+  for (const f of formats) {
+    if (omplirLletra(txt, estrofes, f[0], f[1]) === estrofes.length) { millor = f; totes = true; break; }
+  }
+  if (totes) { infoLletra(millor, 1); return num + 1; }
+  // 2 · no hi cap: fem servir el format més atapeït i continuem a la pàgina
+  //     següent, sempre tallant entre estrofes (mai pel mig d'una)
+  let resten = estrofes, pagines = 0;
+  while (resten.length) {
+    if (pagines) txt = novaPaginaLletra(num + pagines, true);
+    const n = omplirLletra(txt, resten, millor[0], millor[1]);
+    if (!n) {
+      // una sola estrofa més llarga que tota la pàgina: aquí sí que l'hem de
+      // partir, però per línies senceres i continuant a la pàgina següent
+      const linies = resten[0].split('\n');
+      let caben = 0;
+      for (let k = linies.length - 1; k >= 1; k--) {
+        if (omplirLletra(txt, [linies.slice(0, k).join('\n')], millor[0], millor[1])) { caben = k; break; }
+      }
+      if (!caben) { omplirLletra(txt, [linies[0]], millor[0], millor[1]); caben = 1; }
+      resten = [linies.slice(caben).join('\n'), ...resten.slice(1)];
+      pagines++;
+      continue;
+    }
+    resten = resten.slice(n);
+    pagines++;
+  }
+  infoLletra(millor, pagines);
+  return num + pagines;
+}
+function infoLletra(format, pagines) {
+  const el = $('est-lletra-info'); if (!el) return;
+  const cols = format[0] === 1 ? '1 columna' : format[0] + ' columnes';
+  el.textContent = pagines === 1
+    ? `Hi cap en 1 pàgina (${cols}, ${format[1]} pt).`
+    : `No hi cap en una pàgina ni amb ${cols} a ${format[1]} pt: ocupa ${pagines} pàgines, tallant sempre entre estrofes.`;
+  el.style.color = pagines === 1 ? '' : '#b35c00';
+}
+function estCanviarColumnes() { estLlegirCamps(); programarPagines(); desar(); }
 function blocPart(p, ton, opt = {}) {
   const d = document.createElement('div');
   d.className = 'pv-part';
@@ -3202,7 +3689,7 @@ function analitzarXifrat(text) {
 function aplicarImportacio(r, titol, artista) {
   if (!r.parts.length && !r.lletra) { alert("No he trobat ni acords ni lletra en aquest text."); return false; }
   if ((items.length || estTeContingut()) && !confirm('Això substituirà la cançó que tens ara. Continuo?')) return false;
-  items = []; idSeq = 1; nivellCanco = '';
+  items = []; idSeq = 1; nivellCanco = ''; idiomaCanco = '';
   estructura = estBuida();
   // Amb celleta, els acords del xifrat són les formes de la guitarra: els passem als acords reals
   const capo = parseInt(r.capo) || 0;
@@ -3339,6 +3826,22 @@ function instrumentsCanco() {
 const NIVELLS = ['0', '1', '2'];
 const COLORS_NIVELL = { '0': '#2f9e44', '1': '#f08c00', '2': '#c92a2a' };
 let nivellCanco = '';
+const IDIOMES = [['ca', 'Català'], ['es', 'Castellà'], ['en', 'Anglès']];
+const NOM_IDIOMA = Object.fromEntries(IDIOMES);
+let idiomaCanco = '';
+function normalitzarIdioma(v) {
+  const s = String(v || '').trim().toLowerCase();
+  if (!s) return '';
+  for (const [c, n] of IDIOMES) if (s === c || s === n.toLowerCase()) return c;
+  if (s.startsWith('cat')) return 'ca';
+  if (s.startsWith('cast') || s.startsWith('esp')) return 'es';
+  if (s.startsWith('ang') || s.startsWith('eng') || s.startsWith('ingl')) return 'en';
+  return '';
+}
+function xipIdioma(v) { const c = normalitzarIdioma(v); return c ? `<span class="xip-idioma">${NOM_IDIOMA[c]}</span>` : ''; }
+function pintarTriaIdioma() {
+  $('comp-idioma').innerHTML = IDIOMES.map(([c, n]) => `<button class="${idiomaCanco === c ? 'actiu' : ''}" style="${idiomaCanco === c ? 'background:#333;border-color:#333' : ''}" onclick="idiomaCanco='${c}';pintarTriaIdioma()">${n}</button>`).join('');
+}
 function xipNivell(n) { return NIVELLS.includes(String(n)) ? `<span class="xip-nivell" style="background:${COLORS_NIVELL[n]}">Nivell ${n}</span>` : ''; }
 function pintarTriaNivell() {
   $('comp-nivell').innerHTML = NIVELLS.map(n => `<button class="${nivellCanco === n ? 'actiu' : ''}" style="${nivellCanco === n ? 'background:' + COLORS_NIVELL[n] + ';border-color:' + COLORS_NIVELL[n] : 'color:' + COLORS_NIVELL[n] + ';border-color:' + COLORS_NIVELL[n]}" onclick="nivellCanco='${n}';pintarTriaNivell()">Nivell ${n}</button>`).join('');
@@ -3348,11 +3851,12 @@ function compartirCanco() {
   if (!items.length && !estTeContingut()) { alert('Afegeix algun diagrama o la lletra abans de compartir.'); return; }
   if (!$('titolInput').value.trim()) { alert('Posa el títol de la cançó abans de compartir-la.'); $('titolInput').focus(); return; }
   $('comp-autor').value = llegirLocal(CLAU_AUTOR) || '';
-  pintarTriaNivell();
+  pintarTriaNivell(); pintarTriaIdioma();
   obrirModal('modalCompartir');
 }
 function confirmarCompartir() {
   if (!nivellCanco) { alert('Tria de quin nivell és la cançó (0, 1 o 2).'); return; }
+  if (!idiomaCanco) { alert("Tria en quin idioma és la cançó (català, castellà o anglès)."); return; }
   const autor = $('comp-autor').value.trim();
   escriureLocal(CLAU_AUTOR, autor);
   tancarModal('modalCompartir');
@@ -3366,7 +3870,7 @@ async function enviarCanco(sobreescriure, autor) {
     const j = await peticioBiblio('POST', {
       nom, sobreescriure,
       canco: estatActual(),
-      info: { titol, artista: $('artistaInput').value.trim(), autor, nivell: nivellCanco, instruments: instrumentsCanco() }
+      info: { titol, artista: $('artistaInput').value.trim(), autor, nivell: nivellCanco, idioma: idiomaCanco, instruments: instrumentsCanco() }
     });
     if (!j.ok && j.error === 'existeix') {
       $('avis').style.display = 'none';
@@ -3390,18 +3894,24 @@ async function obrirBiblioteca(refrescar) {
   } catch (e) { $('biblio-llista').innerHTML = `<div class="biblio-buit">${esc(missatgeError(e))}</div>`; }
 }
 let biblioNivell = '';
+let biblioIdioma = '';
 function pintarBiblioteca() {
-  const compte = n => biblioLlista.filter(c => !n || String(c.nivell) === n).length;
+  const capN = c => !biblioNivell || String(c.nivell) === biblioNivell;
+  const capI = c => !biblioIdioma || normalitzarIdioma(c.idioma) === biblioIdioma;
+  const compte = n => biblioLlista.filter(c => (!n || String(c.nivell) === n) && capI(c)).length;
+  const compteI = i => biblioLlista.filter(c => (!i || normalitzarIdioma(c.idioma) === i) && capN(c)).length;
   $('biblio-nivells').innerHTML = [['', 'Tots els nivells'], ...NIVELLS.map(n => [n, 'Nivell ' + n])].map(([n, t]) =>
     `<button class="${biblioNivell === n ? 'actiu' : ''}" onclick="biblioNivell='${n}';pintarBiblioteca()">${t} <span style="opacity:.6">${compte(n)}</span></button>`).join('');
+  $('biblio-idiomes').innerHTML = [['', 'Tots els idiomes'], ...IDIOMES].map(([i, t]) =>
+    `<button class="${biblioIdioma === i ? 'actiu' : ''}" onclick="biblioIdioma='${i}';pintarBiblioteca()">${t} <span style="opacity:.6">${compteI(i)}</span></button>`).join('');
   const f = $('biblio-filtre').value.trim().toLowerCase();
-  const llista = biblioLlista.filter(c => (!biblioNivell || String(c.nivell) === biblioNivell) && (!f || [c.nom, c.titol, c.artista, c.autor].join(' ').toLowerCase().includes(f)));
-  if (!llista.length) { $('biblio-llista').innerHTML = `<div class="biblio-buit">${biblioLlista.length ? 'Cap cançó coincideix amb la cerca o el nivell triat.' : 'Encara no hi ha cap cançó compartida.'}</div>`; return; }
+  const llista = biblioLlista.filter(c => capN(c) && capI(c) && (!f || [c.nom, c.titol, c.artista, c.autor].join(' ').toLowerCase().includes(f)));
+  if (!llista.length) { $('biblio-llista').innerHTML = `<div class="biblio-buit">${biblioLlista.length ? 'Cap cançó coincideix amb la cerca o els filtres triats.' : 'Encara no hi ha cap cançó compartida.'}</div>`; return; }
   $('biblio-llista').innerHTML = llista.map(c => {
     const data = new Date(c.data).toLocaleDateString('ca-ES', { day: 'numeric', month: 'short', year: 'numeric' });
     const icones = (c.instruments || []).map(i => XIP_INST[i] ? `<span class="xip" style="background:${XIP_INST[i][1]}">${XIP_INST[i][0]}</span>` : '').join('');
     return `<div class="biblio-fila"><div><div class="t">${xipNivell(c.nivell)}${esc(c.titol || c.nom)}${c.artista ? ' <span style="font-weight:normal;color:#666">— ' + esc(c.artista) + '</span>' : ''}</div>
-      <div class="m">${c.autor ? 'Compartida per ' + esc(c.autor) + ' · ' : ''}${data}</div></div>
+      <div class="m">${xipIdioma(c.idioma)}${c.autor ? 'Compartida per ' + esc(c.autor) + ' · ' : ''}${data}</div></div>
       <span class="i">${icones}</span><button class="btn-accio" style="width:auto" onclick="obrirDeBiblioteca('${esc(c.id)}')">Obrir</button></div>`;
   }).join('');
 }
@@ -3423,17 +3933,18 @@ async function obrirDeBiblioteca(id) {
 const CLAU_LOCAL = 'generador-diagrames-v2';
 function estatActual() {
   return {
-    versio: 2, nivell: nivellCanco, titol: $('titolInput').value, artista: $('artistaInput').value, acords: $('acordsInput').value, ordre: $('ordreInput').value,
+    versio: 2, nivell: nivellCanco, idioma: idiomaCanco, titol: $('titolInput').value, artista: $('artistaInput').value, acords: $('acordsInput').value, ordre: $('ordreInput').value,
     marcaPeu: $('marcaPeuInput').value, marca: $('opt-marca').value, marcaPropia: marcaPropia,
     opcions: { ordre: $('opt-ordre').checked, ilustracio: $('opt-ilustracio').checked, colors: $('opt-colors').checked, inst: $('opt-inst').checked, pal: $('opt-pal').checked, ritmica: $('opt-ritmica').checked, tapar: cordesTapades, celleta: celleta, taparMode: modeTaparActual, taparDoble: $('opt-tapar-doble').checked },
     items: items.map(({ id, ...resta }) => resta),
-    estructura: estructura
+    estructura: estructura, mode: modeActual
   };
 }
 function carregarEstat(e) {
   if (!e || !Array.isArray(e.items)) return false;
   $('titolInput').value = e.titol || ''; $('artistaInput').value = e.artista || '';
   nivellCanco = NIVELLS.includes(String(e.nivell)) ? String(e.nivell) : '';
+  idiomaCanco = normalitzarIdioma(e.idioma);
   $('acordsInput').value = e.acords || ''; $('ordreInput').value = e.ordre || '';
   $('marcaPeuInput').value = e.marcaPeu || ''; marcaPropia = e.marcaPropia || '';
   $('opt-marca').value = ['endirecte', 'propia'].includes(e.marca) ? e.marca : '';
@@ -3445,7 +3956,8 @@ function carregarEstat(e) {
   cordesTapades = parseInt(o.tapar) || 0; taparPreguntat = 'tapar' in o; $('opt-tapar-doble').checked = !!o.taparDoble; modeTapar(o.taparMode === 'visibles' ? 'visibles' : 'tapar');
   estructura = Object.assign(estBuida(), e.estructura || {});
   $('marcaPeuEst').value = $('marcaPeuInput').value;
-  if (modeActual === 'est') estRender();
+  estRender();                     // escriu també to, mode, estil, tempo i lletra
+  if (e.mode === 'est' || e.mode === 'diag') canviarMode(e.mode);
   items = []; idSeq = 1;
   e.items.forEach(it => afegirItem(it, false));
   $('titolMostrat').innerText = textCapcalera() || 'TÍTOL DE LA CANÇÓ';
@@ -3479,29 +3991,39 @@ function netejarTot() {
   items = [];
   estructura = estBuida(); $('marcaPeuEst').value = ''; if (modeActual === 'est') estRender();
   cordesTapades = 0; taparPreguntat = false; actualitzarResumTapar();
-  nivellCanco = '';
+  nivellCanco = ''; idiomaCanco = '';
   celleta = 0; omplirSelectsCelleta(); $('celleta-ajuda').style.display = 'none';
   ['titolInput', 'artistaInput', 'acordsInput', 'ordreInput'].forEach(id => $(id).value = '');
   $('titolMostrat').innerText = 'TÍTOL DE LA CANÇÓ';
+  ultimaSessio = null;
+  try { localStorage.removeItem(CLAU_LOCAL); } catch (e) { }   // si no, en recarregar tornaria
+  $('btn-recuperar').style.display = 'none';
   renderTot();
 }
 
 // Inici
 (function inici() {
   omplirSelectsCelleta();
-  // sempre comencem en blanc (també netegem el que el navegador hagi pogut recordar)
+  omplirSelectsCompassos();
   ['titolInput', 'artistaInput', 'acordsInput', 'ordreInput', 'marcaPeuInput', 'marcaPeuEst'].forEach(id => $(id).value = '');
   $('titolMostrat').innerText = 'TÍTOL DE LA CANÇÓ';
-  // l'última cançó es pot recuperar amb el botó
+  // Si es recarrega la pàgina (o es tanca el navegador sense voler), tornem a
+  // deixar la cançó tal com estava. Per començar de zero hi ha «Netejar tot».
   let desada = null;
   try { desada = JSON.parse(localStorage.getItem(CLAU_LOCAL)); } catch (err) { }
   const teEst = desada && desada.estructura && ((desada.estructura.lletra || '').trim() || (desada.estructura.parts || []).length);
+  let recuperada = false;
   if (desada && Array.isArray(desada.items) && (desada.items.length || teEst)) {
     ultimaSessio = desada;
-    $('btn-recuperar').style.display = 'flex';
+    try { recuperada = carregarEstat(desada); } catch (e) { recuperada = false; }
+    if (!recuperada) $('btn-recuperar').style.display = 'flex';
   }
-  renderTot();
+  if (!recuperada) renderTot();
   renderMarca();
+  if (recuperada) {
+    const nom = textCapcalera();
+    avis(`↩️ Hem recuperat ${nom ? '«' + nom + '»' : 'la cançó que tenies'}. Per començar de zero, fes «🗑️ Començar de nou».`, 7000);
+  }
 })();
 </script>
 </body>
