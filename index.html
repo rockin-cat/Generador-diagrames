@@ -74,12 +74,11 @@ input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-
 .tapar-resum { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f1f6ff; border: 1px solid #cfe0ff; border-radius: 6px; padding: 7px 9px; font-size: 13px; }
 .tapar-resum b { color: #0056b3; }
 .link-btn { background: none; border: none; color: #007bff; font-weight: bold; cursor: pointer; padding: 0; font-size: 13px; text-decoration: underline; }
-.tapar-opcions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
-.tapar-opcio { border: 2px solid #ddd; border-radius: 8px; padding: 8px; cursor: pointer; background: #fff; transition: .15s; }
-.tapar-opcio:hover { border-color: #007bff; }
-.tapar-opcio.seleccionat { border-color: #28a745; background: #e8f5e9; }
-.tapar-opcio .t1 { font-weight: bold; font-size: 15px; margin-top: 4px; }
-.tapar-opcio .t2 { font-size: 12px; color: #666; }
+.cordes-tria { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin-top: 6px; }
+.cordes-tria .ct-etiq { width: 100%; text-align: center; font-size: 8.5px; color: #999; margin-bottom: 1px; text-transform: uppercase; letter-spacing: .04em; }
+.ct-corda { width: 18px; height: 18px; padding: 0; border: 1px solid #cfd6e0; background: #fff; color: #555; border-radius: 4px; font-size: 10.5px; font-weight: bold; cursor: pointer; line-height: 1; }
+.ct-corda:hover { border-color: #007bff; color: #007bff; }
+.ct-corda.tapada { background: #4a4a4a; border-color: #4a4a4a; color: #fff; }
 .tapar-mode { display: inline-flex; border: 1px solid #ccc; border-radius: 6px; overflow: hidden; }
 .tapar-mode button { border: none; background: #fff; padding: 7px 12px; cursor: pointer; font-size: 13px; }
 .tapar-mode button.actiu { background: #007bff; color: #fff; font-weight: bold; }
@@ -433,8 +432,9 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <button class="btn-accio btn-outline" style="color:#17a2b8;border-color:#17a2b8" onclick="obrirEditorGuitarra()">✏️ Dibuixar acord</button>
         <div class="tapar-resum"><span>Celleta:</span><select id="opt-celleta" onchange="canviarCelleta(this.value)" style="width:auto;padding:4px 6px"></select></div>
         <p class="ajuda" id="celleta-ajuda" style="display:none;margin:0">Escriu els acords <b>reals</b> (els que sonen). La guitarra mostrarà la posició que s'ha de tocar amb la celleta.</p>
-        <div class="tapar-resum"><span id="tapar-text">Cordes tapades: <b>cap</b></span><button class="link-btn" onclick="preguntarTapar()">Canviar</button></div>
-        <label class="check" id="tapar-doble-wrap" style="display:none"><input type="checkbox" id="opt-tapar-doble" onchange="desar()"> Imprimir també la versió sense tapar</label>
+        <div class="tapar-resum"><span id="tapar-text">Cap acord amb cordes tapades</span></div>
+        <p class="ajuda" style="margin:0">Sota cada acord hi ha les sis cordes (<b>E A D G B e</b>): clica les que no es toquen i quedaran tapades <b>només en aquell acord</b>.</p>
+        <label class="check" id="tapar-doble-wrap" style="display:none"><input type="checkbox" id="opt-tapar-doble" onchange="desar()"> Imprimir també la versió amb totes les cordes</label>
       </div>
     </div>
     <div>
@@ -636,19 +636,6 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <h2 id="cataleg-titol">Catàleg</h2>
     <div id="cataleg-cos"></div>
     <button class="btn-accio btn-outline" onclick="tancarModal('modalCataleg')" style="margin:0 auto">Fet</button>
-  </div>
-</div>
-
-<!-- ===== PREGUNTA: CORDES TAPADES ===== -->
-<div id="modalTapar" class="modal-overlay" style="z-index:2100" onclick="tancarSiFora(event)">
-  <div class="modal-contingut" style="max-width:640px">
-    <h2 style="color:#007bff">🎸 Cordes de la guitarra</h2>
-    <p class="ajuda" style="font-size:14px">Vols tapar algunes cordes greus perquè l'alumnat es fixi només en les altres? El diagrama sencer sempre es veu; les cordes tapades queden en gris.</p>
-    <div style="margin-top:12px">Vull triar quantes cordes&nbsp;
-      <span class="tapar-mode"><button id="mode-tapar" class="actiu" onclick="modeTapar('tapar')">tapo</button><button id="mode-visibles" onclick="modeTapar('visibles')">deixo visibles</button></span>
-    </div>
-    <div class="tapar-opcions" id="tapar-opcions"></div>
-    <button class="btn-accio btn-outline" onclick="tancarModal('modalTapar')" style="margin:0 auto">Tancar</button>
   </div>
 </div>
 
@@ -903,46 +890,53 @@ function dadesGuitarraCataleg(fitxer) {
   return { fretStart: e.f, nuts: [...e.n].map(c => c === '.' ? '' : c), dots: [...e.d].map(c => c === '.' ? '' : c), nota: e.t || '' };
 }
 
-/* ---- Cordes tapades (guitarra) ---- */
-let cordesTapades = 0, modeTaparActual = 'tapar', taparPreguntat = false;
-function textTapar(n) {
-  if (!n) return 'cap (es veuen les 6)';
-  return `${n} (es ${6 - n === 1 ? 'veu' : 'veuen'} ${6 - n})`;
+/* ---- Cordes tapades: ara es tria acord per acord ----
+   Cada acord de guitarra porta la seva màscara de 6 caràcters ('1' = tapada),
+   de la corda més greu (Mi) a la més aguda (mi). Abans era un sol valor per a
+   tota la cançó, i això no servia per als nivells 0-1, que toquen uns acords
+   a l'aire i altres no. */
+const CORDES_NOM = ['E', 'A', 'D', 'G', 'B', 'e'];
+const CORDES_AJUDA = ['Mi greu', 'La', 'Re', 'Sol', 'Si', 'Mi agut'];
+let ignorarTapades = false;                 // per a la còpia «sense tapar» en imprimir
+function mascaraTapar(v) {
+  if (Array.isArray(v)) return CORDES_NOM.map((_, i) => !!v[i]);
+  if (typeof v === 'number') return CORDES_NOM.map((_, i) => i < v);   // format antic: les N més greus
+  const t = String(v == null ? '' : v);
+  if (/^[01]{6}$/.test(t)) return [...t].map(c => c === '1');
+  const n = parseInt(t) || 0;
+  return CORDES_NOM.map((_, i) => i < n);
+}
+function textMascara(m) { return m.map(x => x ? '1' : '0').join(''); }
+function taparDeItem(it) { return ignorarTapades ? '000000' : (it && it.tapar) || '000000'; }
+function teTapades(it) { return mascaraTapar(it && it.tapar).some(Boolean); }
+function hiHaTapades() { return items.some(i => i.inst === 'guitarra' && teTapades(i)); }
+function potTriarCordes(it) {
+  return it.inst === 'guitarra' && (it.tipus !== 'img' || !!dadesGuitarraCataleg(it.fitxer));
+}
+function controlCordes(it) {
+  const d = document.createElement('div');
+  d.className = 'cordes-tria';
+  const m = mascaraTapar(it.tapar);
+  d.innerHTML = '<span class="ct-etiq">no toquen</span>' + CORDES_NOM.map((n, i) =>
+    `<button class="ct-corda${m[i] ? ' tapada' : ''}" title="${CORDES_AJUDA[i]}" onclick="alternarCorda(${it.id}, ${i})">${n}</button>`).join('');
+  return d;
+}
+function alternarCorda(id, corda) {
+  const it = trobarItem(id); if (!it) return;
+  const m = mascaraTapar(it.tapar);
+  m[corda] = !m[corda];
+  it.tapar = textMascara(m);
+  if (!teTapades(it)) delete it.tapar;
+  renderTot();
 }
 function actualitzarResumTapar() {
-  $('tapar-text').innerHTML = modeTaparActual === 'visibles'
-    ? `Cordes visibles: <b>${6 - cordesTapades}</b>${cordesTapades ? ` (${cordesTapades} tapades)` : ''}`
-    : `Cordes tapades: <b>${cordesTapades || 'cap'}</b>${cordesTapades ? ` (${6 - cordesTapades} visibles)` : ''}`;
-  $('tapar-doble-wrap').style.display = cordesTapades ? 'flex' : 'none';
+  const n = items.filter(i => i.inst === 'guitarra' && teTapades(i)).length;
+  const el = $('tapar-text');
+  if (el) el.innerHTML = n
+    ? `<b>${n}</b> acord${n > 1 ? 's' : ''} amb cordes tapades`
+    : 'Cap acord amb cordes tapades';
+  $('tapar-doble-wrap').style.display = n ? 'flex' : 'none';
 }
-function modeTapar(m) {
-  modeTaparActual = m;
-  $('mode-tapar').classList.toggle('actiu', m === 'tapar');
-  $('mode-visibles').classList.toggle('actiu', m === 'visibles');
-  pintarOpcionsTapar();
-  actualitzarResumTapar();
-  desar();
-}
-function pintarOpcionsTapar() {
-  const cont = $('tapar-opcions'); cont.innerHTML = '';
-  const exemple = dadesGuitarraCataleg('G');
-  const valors = modeTaparActual === 'visibles' ? [6, 5, 4, 3, 2, 1] : [0, 1, 2, 3, 4, 5];
-  valors.forEach(v => {
-    const tap = modeTaparActual === 'visibles' ? 6 - v : v;
-    const d = document.createElement('div');
-    d.className = 'tapar-opcio' + (tap === cordesTapades ? ' seleccionat' : '');
-    const t1 = modeTaparActual === 'visibles'
-      ? (v === 6 ? 'Totes visibles' : `${v} visible${v > 1 ? 's' : ''}`)
-      : (v === 0 ? 'No en tapo cap' : `Tapo ${v}`);
-    const t2 = modeTaparActual === 'visibles'
-      ? (tap ? `${tap} tapada${tap > 1 ? 's' : ''}` : 'cap tapada')
-      : `${6 - tap} visible${6 - tap > 1 ? 's' : ''}`;
-    d.innerHTML = svgGuitarra(exemple, tap) + `<div class="t1">${t1}</div><div class="t2">${t2}</div>`;
-    d.onclick = () => { cordesTapades = tap; taparPreguntat = true; actualitzarResumTapar(); tancarModal('modalTapar'); renderTot(); };
-    cont.appendChild(d);
-  });
-}
-function preguntarTapar() { pintarOpcionsTapar(); obrirModal('modalTapar'); }
 
 // Power chord de guitarra: arrel a la 6a corda (dits 1, 3, 4)
 function powerChordGuitarra(p) {
@@ -1021,7 +1015,6 @@ function omplirDesDeAcords() {
   if (!$('ordreInput').value.trim() && valids.length) $('ordreInput').value = valids.join(' / ');
   renderTot();
   if (dolents.length) alert('No he entès aquests acords: ' + dolents.join(', ') + '\nPots dibuixar-los a mà amb «Dibuixar acord».');
-  if (!teniaGuitarra && !taparPreguntat && items.some(it => it.inst === 'guitarra')) preguntarTapar();
 }
 
 /* =========================================================
@@ -1068,7 +1061,7 @@ function contingut(it) {
     const dc = it.tipus === 'img' ? dadesGuitarraCataleg(it.fitxer) : it;
     if (!dc) div.appendChild(imatgeRetallada(`img/${it.fitxer}.png`, 'guitarra'));
     else {
-      div.innerHTML = svgGuitarra(dc, cordesTapades);
+      div.innerHTML = svgGuitarra(dc, taparDeItem(it));
       if (dc.nota) div.insertAdjacentHTML('beforeend', `<div class="nota-acord">${esc(dc.nota)}</div>`);
     }
   } else if (it.inst === 'teclat') {
@@ -1116,6 +1109,7 @@ function renderTot() {
       }
       if (it.inst === 'baix') card.appendChild(construirPal(it.tipus === 'melbaix' ? bxTabText(it) : it, false));
       card.appendChild(contingut(it));
+      if (potTriarCordes(it)) card.appendChild(controlCordes(it));
       if (it.inst === 'bateria' && it.tipus === 'img') { const n = document.createElement('div'); n.className = 'cataleg-nom'; n.textContent = 'Patró ' + it.num; card.appendChild(n); }
       graella.appendChild(card);
     });
@@ -1126,6 +1120,7 @@ function renderTot() {
     }
   });
   $('missatgeBuit').style.display = items.length ? 'none' : 'block';
+  actualitzarResumTapar();
   programarPagines();
   refrescarCataleg();
   desar();
@@ -1142,18 +1137,18 @@ function reordenar(graella) {
 /* =========================================================
    DIBUIXOS SVG
    ========================================================= */
-function svgGuitarra(d, tapades = 0) {
+function svgGuitarra(d, tapades) {
   const x0 = 30, dx = 22, y0 = 52, dy = 34, fs = parseInt(d.fretStart) || 1;
   const xs = c => x0 + c * dx;
   let s = `<svg class="svg-diag" viewBox="0 0 186 228" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">`;
-  tapades = Math.max(0, Math.min(5, parseInt(tapades) || 0));
+  const tap = mascaraTapar(tapades);
   for (let r = 0; r <= 5; r++) s += `<line x1="${x0}" y1="${y0 + r * dy}" x2="${xs(5)}" y2="${y0 + r * dy}" stroke="#000" stroke-width="1.6"/>`;
   for (let c = 0; c < 6; c++) s += `<line x1="${xs(c)}" y1="${y0}" x2="${xs(c)}" y2="${y0 + 5 * dy}" stroke="#000" stroke-width="1.6"/>`;
   if (fs <= 1) s += `<rect x="${x0 - 1}" y="${y0 - 6}" width="${5 * dx + 2}" height="7" fill="#000"/>`;
   else s += `<text x="${xs(5) + 8}" y="${y0 + dy / 2 + 7}" font-size="19">${fs}fr</text>`;
   (d.nuts || []).forEach((v, c) => {
     const x = xs(c), y = y0 - 18;
-    const tapada = c < tapades;
+    const tapada = tap[c];
     if (v === 'O') s += `<circle cx="${x}" cy="${y}" r="6" fill="${tapada ? '#4a4a4a' : '#fff'}" stroke="${tapada ? '#fff' : '#000'}" stroke-width="1.4"/>`;
     if (v === 'X') s += `<path d="M${x - 6} ${y - 6}L${x + 6} ${y + 6}M${x + 6} ${y - 6}L${x - 6} ${y + 6}" stroke="${tapada ? '#fff' : '#000'}" stroke-width="1.4"/>`;
   });
@@ -1176,8 +1171,14 @@ function svgGuitarra(d, tapades = 0) {
       if (v !== '●') s += `<text x="${xs(c)}" y="${cy + 4}" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">${v}</text>`;
     });
   }
-  // capa fosca per sobre de tot (dits, números i O/X) a les cordes tapades
-  if (tapades) s += `<rect x="3" y="18" width="${xs(tapades - 1) + dx / 2 - 3}" height="${y0 + 5 * dy + 12 - 18}" fill="#4a4a4a" fill-opacity="0.9"/>`;
+  // capa fosca per sobre de tot (dits, números i O/X) a cada corda tapada
+  const yT = 18, hT = y0 + 5 * dy + 12 - 18;
+  tap.forEach((on, c) => {
+    if (!on) return;
+    const a = c === 0 ? 3 : xs(c) - dx / 2;
+    const b = c === 5 ? 183 : xs(c) + dx / 2;
+    s += `<rect x="${a}" y="${yT}" width="${b - a}" height="${hT}" fill="#4a4a4a" fill-opacity="0.9"/>`;
+  });
   return s + '</svg>';
 }
 
@@ -1495,12 +1496,12 @@ function nomAcordPagina(it, colors) {
 }
 
 function paginesGuitarra(llista, colors) {
-  paginesGuitarraAmb(llista, colors, cordesTapades);
-  if (cordesTapades && $('opt-tapar-doble').checked) paginesGuitarraAmb(llista, colors, 0);
-}
-function paginesGuitarraAmb(llista, colors, tapar) {
-  const guard = cordesTapades; cordesTapades = tapar;
-  try { paginesGuitarraCos(llista, colors); } finally { cordesTapades = guard; }
+  paginesGuitarraCos(llista, colors);
+  // segona tanda amb totes les cordes visibles, si s'ha demanat
+  if (hiHaTapades() && $('opt-tapar-doble').checked) {
+    ignorarTapades = true;
+    try { paginesGuitarraCos(llista, colors); } finally { ignorarTapades = false; }
+  }
 }
 function paginesGuitarraCos(llista, colors) {
   trossos(llista, 10).forEach(grup => {
@@ -1732,7 +1733,6 @@ function obrirCataleg(inst) {
   }
   $('modalCataleg').style.display = 'flex';
   refrescarCataleg();
-  if (inst === 'guitarra' && !taparPreguntat && !items.some(it => it.inst === 'guitarra')) preguntarTapar();
 }
 function toggleCataleg(nou, coincideix) {
   const ex = items.find(it => it.inst === nou.inst && coincideix(it));
@@ -3719,7 +3719,7 @@ function aplicarImportacio(r, titol, artista) {
   $('acordsInput').value = basics.join(' ');
   $('ordreInput').value = '';
   $('titolMostrat').innerText = textCapcalera() || 'TÍTOL DE LA CANÇÓ';
-  if (basics.length) { taparPreguntat = true; omplirDesDeAcords(); } else renderTot();
+  if (basics.length) omplirDesDeAcords(); else renderTot();
   if (modeActual === 'est') estRender();
   desar();
   const noDiag = r.acords.filter(a => !acordBasic(a));
@@ -3935,7 +3935,7 @@ function estatActual() {
   return {
     versio: 2, nivell: nivellCanco, idioma: idiomaCanco, titol: $('titolInput').value, artista: $('artistaInput').value, acords: $('acordsInput').value, ordre: $('ordreInput').value,
     marcaPeu: $('marcaPeuInput').value, marca: $('opt-marca').value, marcaPropia: marcaPropia,
-    opcions: { ordre: $('opt-ordre').checked, ilustracio: $('opt-ilustracio').checked, colors: $('opt-colors').checked, inst: $('opt-inst').checked, pal: $('opt-pal').checked, ritmica: $('opt-ritmica').checked, tapar: cordesTapades, celleta: celleta, taparMode: modeTaparActual, taparDoble: $('opt-tapar-doble').checked },
+    opcions: { ordre: $('opt-ordre').checked, ilustracio: $('opt-ilustracio').checked, colors: $('opt-colors').checked, inst: $('opt-inst').checked, pal: $('opt-pal').checked, ritmica: $('opt-ritmica').checked, celleta: celleta, taparDoble: $('opt-tapar-doble').checked },
     items: items.map(({ id, ...resta }) => resta),
     estructura: estructura, mode: modeActual
   };
@@ -3953,13 +3953,17 @@ function carregarEstat(e) {
   $('opt-inst').checked = !!o.inst; $('opt-pal').checked = !!o.pal; $('opt-ritmica').checked = o.ritmica !== false;
   $('opt-ilustracio').checked = o.ilustracio !== false;
   celleta = parseInt(o.celleta) || 0; omplirSelectsCelleta(); $('celleta-ajuda').style.display = celleta ? 'block' : 'none';
-  cordesTapades = parseInt(o.tapar) || 0; taparPreguntat = 'tapar' in o; $('opt-tapar-doble').checked = !!o.taparDoble; modeTapar(o.taparMode === 'visibles' ? 'visibles' : 'tapar');
+  $('opt-tapar-doble').checked = !!o.taparDoble;
   estructura = Object.assign(estBuida(), e.estructura || {});
   $('marcaPeuEst').value = $('marcaPeuInput').value;
   estRender();                     // escriu també to, mode, estil, tempo i lletra
   if (e.mode === 'est' || e.mode === 'diag') canviarMode(e.mode);
   items = []; idSeq = 1;
   e.items.forEach(it => afegirItem(it, false));
+  // cançons fetes amb la versió antiga: el valor que valia per a tota la cançó
+  // (les N cordes més greus) passa a ser la màscara de cada acord de guitarra
+  const llegat = parseInt(o.tapar) || 0;
+  if (llegat) items.forEach(it => { if (it.inst === 'guitarra' && !it.tapar) it.tapar = textMascara(mascaraTapar(llegat)); });
   $('titolMostrat').innerText = textCapcalera() || 'TÍTOL DE LA CANÇÓ';
   renderTot();
   return true;
@@ -3990,7 +3994,7 @@ function netejarTot() {
   if (!confirm('Vols esborrar-ho tot i començar de zero?')) return;
   items = [];
   estructura = estBuida(); $('marcaPeuEst').value = ''; if (modeActual === 'est') estRender();
-  cordesTapades = 0; taparPreguntat = false; actualitzarResumTapar();
+  actualitzarResumTapar();
   nivellCanco = ''; idiomaCanco = '';
   celleta = 0; omplirSelectsCelleta(); $('celleta-ajuda').style.display = 'none';
   ['titolInput', 'artistaInput', 'acordsInput', 'ordreInput'].forEach(id => $(id).value = '');
