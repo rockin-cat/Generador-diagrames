@@ -770,6 +770,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <div class="mel-grup" id="mel-alteracions">
         <button class="mel-btn" data-alt="#" onclick="melTriaAlteracio('#')">♯</button>
         <button class="mel-btn" data-alt="b" onclick="melTriaAlteracio('b')">♭</button>
+        <button class="mel-btn" data-alt="n" onclick="melTriaAlteracio('n')" title="Becaire: nota natural encara que l'armadura l'alteri">♮</button>
       </div>
       <button class="mel-btn" onclick="melDesfer()" title="Desfer (Ctrl+Z)">↩︎ Desfer</button>
       <button class="mel-btn" onclick="melEsborrarSel()">🗑️ Esborrar nota</button>
@@ -786,6 +787,11 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <label class="check" style="text-transform:none"><input type="checkbox" id="melodia-noms" onchange="melRender()"> Noms de les notes</label>
         <label class="check" style="text-transform:none" title="Afegeix, sota la partitura, el dibuix de les claus de cada posició que surt a la melodia"><input type="checkbox" id="melodia-diagrames" onchange="melRender()"> Diagrames de digitació</label>
       </span>
+      <label style="text-transform:none;display:flex;align-items:center;gap:6px" title="Armadura: les notes de la tonalitat surten alterades soles en clicar-les">Tonalitat
+        <select id="melodia-armadura" onchange="melRender()" style="width:auto">
+          <option value="0">Do · La-</option><option value="1">Sol · Mi-</option><option value="2">Re · Si-</option><option value="3">La · Fa#-</option><option value="4">Mi · Do#-</option><option value="5">Si · Sol#-</option><option value="6">Fa# · Re#-</option>
+          <option value="-1">Fa · Re-</option><option value="-2">Sib · Sol-</option><option value="-3">Mib · Do-</option><option value="-4">Lab · Fa-</option><option value="-5">Reb · Sib-</option><option value="-6">Solb · Mib-</option>
+        </select></label>
       <label style="text-transform:none;display:flex;align-items:center;gap:6px">Compàs
         <select id="melodia-compas" onchange="melRecalcular();melRender()" style="width:75px"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option></select></label>
       <span class="mel-grup">
@@ -2119,9 +2125,25 @@ function melParsePitch(p) {
   const m = String(p || '').match(/^([A-G])([#b]?)(\d)$/); if (!m) return null;
   return { l: m[1], alt: m[2], o: +m[3], diat: +m[3] * 7 + DIAT[m[1]], midi: (+m[3] + 1) * 12 + SEMIS[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) };
 }
-function melPitchDe(diat, alt) {
+/* ---- Armadura (tonalitat): nombre de quintes, + sostinguts / − bemolls ---- */
+const ARM_SOST = ['F', 'C', 'G', 'D', 'A', 'E', 'B'], ARM_BEM = ['B', 'E', 'A', 'D', 'G', 'C', 'F'];
+function armAlt(arm, lletra) {                 // alteració que l'armadura posa a una lletra
+  arm = arm | 0;
+  if (arm > 0) return ARM_SOST.slice(0, arm).includes(lletra) ? '#' : '';
+  if (arm < 0) return ARM_BEM.slice(0, -arm).includes(lletra) ? 'b' : '';
+  return '';
+}
+function armNormal(arm) { arm = arm | 0; return arm > 6 ? arm - 12 : arm < -6 ? arm + 12 : arm; }   // mai més de 6 alteracions
+function melArmadura() { return +($('melodia-armadura').value || 0); }
+function melArmaduraMostrada() {               // armadura tal com es dibuixa (transportada si cal)
+  const arm = melArmadura();
+  return melOffset().semi ? armNormal(arm + SAXO.SAXOS[melSaxo].quintes) : arm;
+}
+// alt: '' = el que digui l'armadura · '#' / 'b' = forçat · 'n' = becaire (natural)
+function melPitchDe(diat, alt, arm) {
   const o = Math.floor(diat / 7), l = DIAT_INV[diat % 7];
-  return l + (alt || '') + o;
+  const a = alt === 'n' ? '' : alt || armAlt(arm === undefined ? melArmaduraMostrada() : arm, l);
+  return l + a + o;
 }
 function melDuradaTriada() {
   const d = melFigura * (melPuntet ? 1.5 : 1);
@@ -2174,7 +2196,9 @@ function melMouSel(dir) {
   const n = melNotes[melSel]; if (!n || !n.p) return;
   const p = melParsePitch(n.p); if (!p) return;
   melGuardarHistoria();
-  n.p = melPitchDe(p.diat + dir, p.alt);
+  const pm = melParsePitch(melMostrada(n.p)), arm = melArmaduraMostrada();
+  const segueixArmadura = pm.alt === armAlt(arm, pm.l);
+  n.p = melGuardable(melPitchDe(pm.diat + dir, segueixArmadura ? '' : (pm.alt || 'n'), arm));
   melRender();
 }
 function melTriaAlteracio(a) {
@@ -2251,13 +2275,20 @@ function melSilenciPath(d, x, y) {                   // y = línia central
   }
   return s;
 }
+function glifAlteracio(alt, ax, y) {           // sostingut, bemoll o becaire centrat a (ax, y)
+  if (alt === '#') return `<path d="M${ax - 2},${y - 9}V${y + 8}M${ax + 2},${y - 8}V${y + 9}M${ax - 5},${y - 2}L${ax + 5},${y - 4}M${ax - 5},${y + 4}L${ax + 5},${y + 2}" stroke="#000" stroke-width="1.3" fill="none"/>`;
+  if (alt === 'b') return `<path d="M${ax - 2},${y - 12}V${y + 6} C${ax + 5},${y - 2} ${ax + 5},${y + 1} ${ax - 2},${y + 6}" stroke="#000" stroke-width="1.4" fill="none"/>`;
+  return `<path d="M${ax - 2.5},${y - 10}V${y + 4}L${ax + 2.5},${y + 2}M${ax + 2.5},${y + 10}V${y - 4}L${ax - 2.5},${y - 2}" stroke="#000" stroke-width="1.4" fill="none"/>`;
+}
 function svgSistemaMelodia(els, st, opts) {
   const W = 1000, xFi = W - 14;
   const BASE = opts.base || MEL_BASE;
   // amb signe de repetició inicial, les notes comencen una mica més a la dreta
   // per deixar-li lloc després de la clau i del compàs
-  const xIni = (opts.clau === 'fa' ? 100 : 78) + (opts.repInici ? 34 : 0);
-  const xClau = opts.clau === 'fa' ? 84 : 62;
+  const arm = armNormal(opts.armadura | 0), nArm = Math.abs(arm);
+  const ampleArm = nArm ? nArm * 11 + 6 : 0;
+  const xIni = (opts.clau === 'fa' ? 100 : 78) + (opts.repInici ? 34 : 0) + ampleArm;
+  const xClau = (opts.clau === 'fa' ? 84 : 62) + ampleArm;
   const ambTab = !!opts.tab, TAB_GAP = 15;
   const cordesTab = opts.cordes || ['g', 'd', 'a', 'e'];
   const nTab = cordesTab.length, tabAlt = (nTab - 1) * TAB_GAP;
@@ -2310,6 +2341,13 @@ function svgSistemaMelodia(els, st, opts) {
   }
   s += opts.clau === 'fa' ? clauFa(26, yLinia(3)) : clauSol(34, yLinia(1));
   if (opts.octavaBaix) s += `<text x="34" y="${yLinia(0) + 20}" font-size="15" font-weight="bold" text-anchor="middle">8</text>`;
+  if (nArm) {                                                        // armadura
+    // posicions respecte de la línia inferior (clau de sol: Fa5 Do5 Sol5… / Si4 Mi5 La4…); en clau de fa, dues més avall
+    const dOct = opts.clau === 'fa' ? -2 : 0;
+    const posSost = [8, 5, 9, 6, 3, 7, 4], posBem = [4, 7, 3, 6, 2, 5, 1];
+    const xArm0 = opts.clau === 'fa' ? 66 : 52;
+    (arm > 0 ? posSost : posBem).slice(0, nArm).forEach((dd, i) => { s += glifAlteracio(arm > 0 ? '#' : 'b', xArm0 + i * 11, yN(BASE + dd + dOct)); });
+  }
   if (opts.compas) s += `<text x="${xClau}" y="${yLinia(3) + 4}" font-size="${MEL_GAP * 2.1}" font-weight="bold" text-anchor="middle">${st.num}</text><text x="${xClau}" y="${yLinia(1) + 4}" font-size="${MEL_GAP * 2.1}" font-weight="bold" text-anchor="middle">${st.den}</text>`;
   // posicions
   let x = xIni;
@@ -2377,12 +2415,7 @@ function svgSistemaMelodia(els, st, opts) {
       }
     }
     s += `<ellipse class="cap-nota" data-idx="${e.idx}" cx="${x0}" cy="${y}" rx="6.6" ry="5" transform="rotate(-20 ${x0} ${y})" fill="${buida ? '#fff' : '#000'}" stroke="#000" stroke-width="${buida ? 2 : 1}"/>`;
-    if (p.alt) {
-      const ax = x0 - 17;
-      s += p.alt === '#'
-        ? `<path d="M${ax - 2},${y - 9}V${y + 8}M${ax + 2},${y - 8}V${y + 9}M${ax - 5},${y - 2}L${ax + 5},${y - 4}M${ax - 5},${y + 4}L${ax + 5},${y + 2}" stroke="#000" stroke-width="1.3" fill="none"/>`
-        : `<path d="M${ax - 2},${y - 12}V${y + 6} C${ax + 5},${y - 2} ${ax + 5},${y + 1} ${ax - 2},${y + 6}" stroke="#000" stroke-width="1.4" fill="none"/>`;
-    }
+    if (p.alt !== armAlt(arm, p.l)) s += glifAlteracio(p.alt || 'n', x0 - 17, y);   // només si no ho diu l'armadura
     if (e.d === 3 || e.d === 6 || e.d === 12) s += `<circle cx="${x0 + 11}" cy="${y - (Math.round((MEL_BASE - p.diat) % 2) === 0 ? 5 : 0)}" r="2.4" fill="#000"/>`;
     // plica
     if (e.d < 16) {
@@ -2433,7 +2466,7 @@ function svgMelodia(m, opts = {}) {
   });
   if (act.length) sistemes.push(act);
   return sistemes.map((sis, i) => `<div class="sistema-melodia">${svgSistemaMelodia(sis, st,
-    { ...opts, compas: i === 0, repInici: !!m.repeticio && i === 0, repFi: !!m.repeticio && i === sistemes.length - 1 })}</div>`).join('');
+    { ...opts, armadura: opts.armadura === undefined ? (m.armadura | 0) : opts.armadura, compas: i === 0, repInici: !!m.repeticio && i === 0, repFi: !!m.repeticio && i === sistemes.length - 1 })}</div>`).join('');
 }
 
 /* ---- Saxo: pentagrama transportat amb els números de digitació ---- */
@@ -2444,7 +2477,8 @@ function svgSaxo(m, opts = {}) {
   const notes = (m.notes || []).map(n => ({ ...n, p: n.p && transportat ? SAXO.transposar(n.p, sx.semi, sx.diat) : n.p }));
   const numeros = (m.notes || []).map(n => n.p ? (SAXO.digitacio(n.p, tipus) || '?') : '');
   const nomsEscrits = (m.notes || []).map(n => n.p ? SAXO.nomCatala(SAXO.escrita(n.p, tipus)) : '');
-  let html = svgMelodia({ ...m, notes }, { selIdx: opts.selIdx, sota: i => numeros[i], sobre: m.noms ? i => nomsEscrits[i] : null });
+  const armadura = transportat ? armNormal((m.armadura | 0) + sx.quintes) : (m.armadura | 0);
+  let html = svgMelodia({ ...m, notes }, { selIdx: opts.selIdx, armadura, sota: i => numeros[i], sobre: m.noms ? i => nomsEscrits[i] : null });
   if (m.diagrames) html += diagramesSaxo(m, tipus);
   return html;
 }
@@ -2540,7 +2574,7 @@ function melClic(e, svg) {
   melAfegir(melGuardable(melPitchDe(diat, melAlt)));
 }
 function dadesMelodiaActual() {
-  const d = { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value, repeticio: $('melodia-repeticio').checked };
+  const d = { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value, repeticio: $('melodia-repeticio').checked, armadura: melArmadura() };
   if (melInst === 'saxo') { d.saxo = melSaxo; d.noms = $('melodia-noms').checked; d.diagrames = $('melodia-diagrames').checked; }
   return d;
 }
@@ -2570,6 +2604,7 @@ function obrirEditorMelodia(it = null, inst) {
   melCanviarInstrument($('melodia-inst').value);
   $('melodia-titol').value = dades ? dades.nom : '';
   $('melodia-compas').value = dades ? dades.compas : '4/4';
+  $('melodia-armadura').value = String(armNormal(dades && dades.armadura ? dades.armadura : 0));
   $('melodia-compassos').value = dades ? dades.compassos : '2';
   $('melodia-repeticio').checked = !!(dades && dades.repeticio);
   $('melodia-compassos').dataset.ara = $('melodia-compassos').value;
@@ -4224,13 +4259,14 @@ function analitzarMusicXML(text) {
   doc.querySelectorAll('part-list > score-part').forEach(sp => noms[sp.getAttribute('id')] = txt(sp, 'part-name'));
   const parts = [];
   doc.querySelectorAll('score-partwise > part').forEach(part => {
-    let divisions = 1, num = 4, den = 4, transpose = null, veu = null;
+    let divisions = 1, num = 4, den = 4, transpose = null, veu = null, quintes = null;
     const avisos = []; let compasCanvia = false;
     const mesures = [];
     part.querySelectorAll(':scope > measure').forEach((me, mi) => {
       const d = txt(me, 'attributes > divisions'); if (d) divisions = +d || divisions;
       const tn = txt(me, 'attributes > time > beats'), tdn = txt(me, 'attributes > time > beat-type');
       if (tn && tdn) { if (mesures.length && (+tn !== num || +tdn !== den)) compasCanvia = true; if (!mesures.length) { num = +tn; den = +tdn; } }
+      const q = txt(me, 'attributes > key > fifths'); if (q !== '' && quintes === null) quintes = +q || 0;
       const tr = me.querySelector('attributes > transpose');
       if (tr) transpose = { semi: (+txt(tr, 'chromatic') || 0) + 12 * (+txt(tr, 'octave-change') || 0), diat: (+txt(tr, 'diatonic') || 0) + 7 * (+txt(tr, 'octave-change') || 0) };
       const passosPerTemps = den === 8 ? 2 : 4, passosPerCompas = num * passosPerTemps;
@@ -4261,7 +4297,7 @@ function analitzarMusicXML(text) {
     });
     if (compasCanvia) avisos.push('el compàs canvia a mitja partitura i s’ha mantingut el primer');
     const id = part.getAttribute('id');
-    if (mesures.some(m => m.notes.some(n => n.p))) parts.push({ id, nom: noms[id] || '', transpose, mesures, avisos: [...new Set(avisos)] });
+    if (mesures.some(m => m.notes.some(n => n.p))) parts.push({ id, nom: noms[id] || '', transpose, quintes: quintes || 0, mesures, avisos: [...new Set(avisos)] });
   });
   return { titol, parts };
 }
@@ -4271,6 +4307,7 @@ const COMPASSOS_PER_BLOC = 12;
 function itemsDesDePart(part, titol, tipus) {
   const tr = part.transpose || { semi: 0, diat: 0 };
   const real = p => p ? SAXO.transposar(p, tr.semi, tr.diat) : null;
+  const armadura = armNormal(part.quintes + ((((tr.semi * 7) % 12) + 18) % 12 - 6));   // tonalitat real
   let ms = part.mesures.map(m => ({ ...m, notes: m.notes.map(n => ({ d: n.d, p: real(n.p) })) }));
   const ambNotes = m => m.notes.some(n => n.p);
   let primer = ms.findIndex(ambNotes); let darrer = ms.length - 1; while (darrer > primer && !ambNotes(ms[darrer])) darrer--;
@@ -4290,7 +4327,7 @@ function itemsDesDePart(part, titol, tipus) {
     }));
     const inici = primer + i * COMPASSOS_PER_BLOC + 1;
     const nom = blocs.length > 1 ? `${titol} · compassos ${inici}–${inici + b.length - 1}` : (primer > 0 ? `${titol} · des del compàs ${inici}` : titol);
-    afegits.push(afegirItem({ inst: 'saxo', tipus: 'melodia', saxo: tipus, nom, notes, compas, compassos: String(b.length), repeticio: false, noms: false }, false));
+    afegits.push(afegirItem({ inst: 'saxo', tipus: 'melodia', saxo: tipus, nom, notes, compas, compassos: String(b.length), repeticio: false, noms: false, armadura }, false));
   });
   return afegits;
 }

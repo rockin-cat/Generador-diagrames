@@ -20,10 +20,11 @@
 
   // Tipus de saxo: quants semitons (i graus diatònics) hi ha entre
   // la nota real i la nota escrita. Alt en Mi♭: escrit = real + 6a major.
-  // Tenor en Si♭: escrit = real + 9a major.
+  // Tenor en Si♭: escrit = real + 9a major. «quintes» = quants sostinguts
+  // més té l'armadura escrita respecte de la real (Sol M real → Mi M a l'alt).
   const SAXOS = {
-    alt:   { nom: 'Saxo alt',   curt: 'Alt',   semi: 9,  diat: 5, clau: 'Mi♭' },
-    tenor: { nom: 'Saxo tenor', curt: 'Tenor', semi: 14, diat: 8, clau: 'Si♭' }
+    alt:   { nom: 'Saxo alt',   curt: 'Alt',   semi: 9,  diat: 5, quintes: 3, clau: 'Mi♭' },
+    tenor: { nom: 'Saxo tenor', curt: 'Tenor', semi: 14, diat: 8, quintes: 2, clau: 'Si♭' }
   };
   const PER_DEFECTE = 'alt';
 
