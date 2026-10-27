@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="saxo.js"></script>
 <style>
 /* =========================================================
    1. INTERFÍCIE
@@ -46,9 +47,13 @@ input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-
 .acord-item:hover { box-shadow: 0 6px 15px rgba(0,0,0,.1); border-color: #ccc; }
 .sec-guitarra .acord-item { width: 180px; }
 .sec-teclat .acord-item { width: 320px; }
-.sec-teclat .acord-item.melodia, .sec-guitarra .acord-item.melodia, .sec-baix .acord-item { width: 100%; }
+.sec-teclat .acord-item.melodia, .sec-guitarra .acord-item.melodia, .sec-baix .acord-item, .sec-saxo .acord-item { width: 100%; }
 .sec-bateria .acord-item { width: 320px; }
 .sortable-ghost { opacity: .3; }
+.saxo-diagrames { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; margin-top: 6px; }
+.saxo-diagrames figure { margin: 0; text-align: center; break-inside: avoid; }
+.saxo-diagrames .saxo-num { font-weight: 700; font-size: 17px; margin-bottom: 2px; }
+.saxo-diagrames figcaption { font-size: 12px; color: #444; }
 .botons-targeta { position: absolute; top: -10px; right: -10px; display: flex; gap: 5px; z-index: 10; opacity: 0; transition: .2s; }
 .acord-item:hover .botons-targeta { opacity: 1; }
 .btn-targeta { width: 28px; height: 28px; border-radius: 50%; border: none; color: #fff; font-size: 13px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
@@ -459,6 +464,15 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <button class="btn-accio btn-outline" style="color:#d35400;border-color:#d35400" onclick="obrirEditorBateria()">🥁 Seqüenciador</button>
       </div>
     </div>
+    <div>
+      <label class="titol-inst" style="color:#0ca678">🎷 Saxo</label>
+      <div class="fila-botons">
+        <button class="btn-accio btn-outline" style="color:#0ca678;border-color:#0ca678" onclick="obrirEditorMelodia(null, 'saxo')">🎵 Escriure melodia</button>
+        <button class="btn-accio btn-outline" style="color:#099268;border-color:#099268" onclick="document.getElementById('fitxerMusicXML').click()">📂 Importar partitura (MusicXML)</button>
+        <input type="file" id="fitxerMusicXML" accept=".musicxml,.xml,.mxl,application/vnd.recordare.musicxml+xml,application/vnd.recordare.musicxml" style="display:none" onchange="importarMusicXML(this)">
+        <p class="ajuda" style="margin:0">Les notes s'escriuen <b>reals</b> (com sonen a la banda) i l'eina les transporta i hi posa els <b>números de digitació</b> del saxo alt o tenor.</p>
+      </div>
+    </div>
 
     <div class="hr-div"></div>
     <label>📄 Opcions de pàgina</label>
@@ -762,6 +776,16 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     </div>
     <div class="mel-barra">
       <input type="text" id="melodia-titol" placeholder="Títol (ex: Opció 1)" style="width:160px">
+      <select id="melodia-inst" onchange="melCanviarInstrument(this.value)" style="width:auto" title="Per a quin instrument és la melodia">
+        <option value="teclat">🎹 Teclat</option><option value="saxo:alt">🎷 Saxo alt</option><option value="saxo:tenor">🎷 Saxo tenor</option>
+      </select>
+      <span id="mel-saxo-opcions" class="mel-grup" style="display:none">
+        <select id="melodia-vista" onchange="melRender()" style="width:auto" title="Què mostra el pentagrama mentre escrius">
+          <option value="real">Pentagrama: notes reals (com sonen)</option><option value="saxo">Pentagrama: notes del saxo (transportades)</option>
+        </select>
+        <label class="check" style="text-transform:none"><input type="checkbox" id="melodia-noms" onchange="melRender()"> Noms de les notes</label>
+        <label class="check" style="text-transform:none" title="Afegeix, sota la partitura, el dibuix de les claus de cada posició que surt a la melodia"><input type="checkbox" id="melodia-diagrames" onchange="melRender()"> Diagrames de digitació</label>
+      </span>
       <label style="text-transform:none;display:flex;align-items:center;gap:6px">Compàs
         <select id="melodia-compas" onchange="melRecalcular();melRender()" style="width:75px"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option></select></label>
       <span class="mel-grup">
@@ -776,6 +800,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <button class="mel-btn" onclick="if(confirm('Esborrar tota la melodia?')){melGuardarHistoria();melNotes=[];melSel=-1;melRender();}">🗑️ Netejar tot</button>
       <span class="ajuda" id="mel-so"></span>
       <span class="ajuda" id="mel-info"></span>
+      <span class="ajuda" id="mel-saxo-avis" style="color:#c92a2a"></span>
     </div>
     <div id="melodia-editor" class="mel-editor"></div>
     <div style="margin-top:16px;display:flex;justify-content:center;gap:10px">
@@ -837,7 +862,8 @@ const INSTRUMENTS = {
   guitarra: { nom: 'Guitarra', icona: '🎸' },
   teclat:   { nom: 'Teclat',   icona: '🎹' },
   baix:     { nom: 'Baix',     icona: '🎸' },
-  bateria:  { nom: 'Bateria',  icona: '🥁' }
+  bateria:  { nom: 'Bateria',  icona: '🥁' },
+  saxo:     { nom: 'Saxo',     icona: '🎷' }
 };
 const COLORS_ACORDS = ['#e03131', '#40c057', '#f59f00', '#1c7ed6', '#ae3ec9', '#e8b500', '#0ca678', '#d6336c', '#495057'];
 let items = [];      // {id, inst, tipus, nom, ...}
@@ -1030,12 +1056,16 @@ function editarItem(id) {
   const it = trobarItem(id); if (!it) return;
   if (esTab(it)) obrirEditorBaix(it, 'guitarra');
   else if (it.inst === 'guitarra') obrirEditorGuitarra(it);
-  else if (it.inst === 'teclat' && it.tipus === 'melodia') obrirEditorMelodia(it);
+  else if ((it.inst === 'teclat' || it.inst === 'saxo') && it.tipus === 'melodia') obrirEditorMelodia(it);
   else if (it.inst === 'teclat') obrirEditorTeclat(it);
   else if (it.inst === 'baix') obrirEditorBaix(it);
   else if (it.inst === 'bateria' && it.tipus === 'seq') obrirEditorBateria(it);
 }
 function editable(it) { return !(it.tipus === 'img') || it.inst === 'guitarra'; }
+function titolItem(it) {                   // títol de la targeta / del bloc imprès
+  if (it.inst === 'saxo') return [it.nom, SAXO.SAXOS[it.saxo] ? SAXO.SAXOS[it.saxo].nom : 'Saxo alt'].filter(Boolean).join(' · ');
+  return it.nom || '';
+}
 
 function actualitzarCapcalera() {
   $('titolMostrat').innerText = textCapcalera() || 'TÍTOL DE LA CANÇÓ';
@@ -1080,6 +1110,8 @@ function contingut(it) {
   } else if (it.inst === 'bateria') {
     if (it.tipus === 'img') div.appendChild(imatgeRetallada(`img/dors patrons de bateria ${it.num}.png`, 'bateria'));
     else div.innerHTML = svgBateria(it.steps, it.compas, { titol: it.nom });
+  } else if (it.inst === 'saxo') {
+    div.innerHTML = svgSaxo(it);
   }
   return div;
 }
@@ -1110,8 +1142,8 @@ function renderTot() {
         n.style.color = ambColor ? colors[clauItem(it)] : '#000';
         n.textContent = etiquetaItem(it);
         card.appendChild(n);
-      } else if (it.nom && !(it.inst === 'bateria' && it.tipus === 'img')) {
-        const n = document.createElement('div'); n.className = 'titol-bloc'; n.textContent = it.nom; card.appendChild(n);
+      } else if (titolItem(it) && !(it.inst === 'bateria' && it.tipus === 'img')) {
+        const n = document.createElement('div'); n.className = 'titol-bloc'; n.textContent = titolItem(it); card.appendChild(n);
       }
       if (it.inst === 'baix') card.appendChild(construirPal(it.tipus === 'melbaix' ? bxTabText(it) : it, false, 'baix'));
       if (esTab(it)) card.appendChild(construirPal(bxTabText(it, 'guitarra'), false, 'guitarra'));
@@ -1605,7 +1637,7 @@ function paginesRitmica(baix, bat) {
   baix.forEach((it, i) => {
     const b = document.createElement('div'); b.className = 'bloc-flux';
     if (i === 0) b.innerHTML = '<div class="subtitol-pag">🎸 Baix</div>';
-    if (it.nom) { const t = document.createElement('div'); t.className = 'titol-bloc'; t.textContent = it.nom; b.appendChild(t); }
+    if (titolItem(it)) { const t = document.createElement('div'); t.className = 'titol-bloc'; t.textContent = titolItem(it); b.appendChild(t); }
     if ($('opt-pal').checked) b.appendChild(construirPal(it, false));
     b.appendChild(contingut(it));
     blocs.push(b);
@@ -1652,7 +1684,7 @@ function paginesFlux(llista, inst) {
   llista.forEach(it => {
     const b = document.createElement('div');
     b.className = 'bloc-flux';
-    if (it.nom) { const t = document.createElement('div'); t.className = 'titol-bloc'; t.textContent = it.nom; b.appendChild(t); }
+    if (titolItem(it)) { const t = document.createElement('div'); t.className = 'titol-bloc'; t.textContent = titolItem(it); b.appendChild(t); }
     if (it.inst === 'baix' && $('opt-pal').checked) b.appendChild(construirPal(it.tipus === 'melbaix' ? bxTabText(it) : it, false, 'baix'));
     if (esTab(it) && $('opt-pal').checked) b.appendChild(construirPal(bxTabText(it, 'guitarra'), false, 'guitarra'));
     b.appendChild(contingut(it));
@@ -1691,6 +1723,7 @@ function construirPagines() {
   const baix = items.filter(i => i.inst === 'baix'), bat = items.filter(i => i.inst === 'bateria');
   if ($('opt-ritmica').checked && baix.length && bat.length) paginesRitmica(baix, bat);
   else { paginesFlux(baix, 'baix'); paginesBateria(bat); }
+  paginesFlux(items.filter(i => i.inst === 'saxo'), 'saxo');
   pag.classList.remove('construint');
   paginesPendents = false;
   if (!pag.children.length && previ) pag.innerHTML = '<p style="color:#fff;text-align:center">Encara no hi ha cap diagrama.</p>';
@@ -2064,6 +2097,23 @@ const MEL_BASE = 4 * 7 + DIAT.E;          // E4 = línia inferior de la clau de 
 
 let melNotes = [], melSel = -1, melFigura = 4, melPuntet = false, melSilenci = false, melAlt = '', melodiaEditant = null;
 let melHistoria = [];
+// Per a quin instrument s'escriu la melodia. Les notes es guarden SEMPRE reals
+// (com sonen); per al saxo, el pentagrama pot mostrar-les transportades.
+let melInst = 'teclat', melSaxo = SAXO.PER_DEFECTE;
+function melOffset() {                      // interval entre la nota guardada (real) i la dibuixada
+  if (melInst === 'saxo' && $('melodia-vista').value === 'saxo') { const sx = SAXO.SAXOS[melSaxo]; return { semi: sx.semi, diat: sx.diat }; }
+  return { semi: 0, diat: 0 };
+}
+function melMostrada(pReal) { const o = melOffset(); return o.semi ? SAXO.transposar(pReal, o.semi, o.diat) : pReal; }
+function melGuardable(pMostrada) { const o = melOffset(); return o.semi ? SAXO.transposar(pMostrada, -o.semi, -o.diat) : pMostrada; }
+function melCanviarInstrument(v) {
+  const [inst, tipus] = String(v).split(':');
+  melInst = inst === 'saxo' ? 'saxo' : 'teclat';
+  melSaxo = SAXO.SAXOS[tipus] ? tipus : SAXO.PER_DEFECTE;
+  $('mel-saxo-opcions').style.display = melInst === 'saxo' ? 'inline-flex' : 'none';
+  $('btn-guardar-melodia').style.background = melInst === 'saxo' ? '#0ca678' : '#9b59b6';
+  melRender();
+}
 
 function melParsePitch(p) {
   const m = String(p || '').match(/^([A-G])([#b]?)(\d)$/); if (!m) return null;
@@ -2130,7 +2180,7 @@ function melMouSel(dir) {
 function melTriaAlteracio(a) {
   melAlt = melAlt === a ? '' : a;
   const n = melNotes[melSel];
-  if (n && n.p) { const p = melParsePitch(n.p); melGuardarHistoria(); n.p = melPitchDe(p.diat, melAlt); }
+  if (n && n.p) { const p = melParsePitch(melMostrada(n.p)); melGuardarHistoria(); n.p = melGuardable(melPitchDe(p.diat, melAlt)); }
   melRender();
 }
 function melToggleRepeticio() {
@@ -2216,10 +2266,12 @@ function svgSistemaMelodia(els, st, opts) {
   const rel = dd => -(dd - BASE) * MEL_GAP / 2;                        // 0 = línia inferior
   let sostre = -4 * MEL_GAP - 6, terra = 8;
   diats.forEach(dd => { sostre = Math.min(sostre, rel(dd) - 34); terra = Math.max(terra, rel(dd) + 34); });
-  if (opts.noms) sostre -= 20;
+  if (opts.noms || opts.sobre) sostre -= 20;
   const staffB = 14 - sostre;
   const tabTop = staffB + terra + 14;
-  const H = ambTab ? tabTop + tabAlt + 14 : staffB + terra + 12;
+  const ambSota = typeof opts.sota === 'function';
+  const ySota = staffB + terra + 16;
+  const H = ambTab ? tabTop + tabAlt + 14 : staffB + terra + 12 + (ambSota ? 26 : 0);
   const yN = dd => staffB + rel(dd);
   const yLinia = i => staffB - i * MEL_GAP;                            // i = 0..4
   const yNoms = staffB + sostre + 16;
@@ -2312,6 +2364,18 @@ function svgSistemaMelodia(els, st, opts) {
       const col = (opts.colors && opts.colors[melParsePitch(e.p).midi % 12]) || '#000';
       s += `<text x="${x0}" y="${yNoms}" font-size="17" font-weight="bold" fill="${col}" text-anchor="middle">${p.l}${p.alt}</text>`;
     }
+    if (opts.sobre && primerTros) {
+      const t = opts.sobre(e.idx);
+      if (t) s += `<text x="${x0}" y="${yNoms}" font-size="15" fill="#444" text-anchor="middle">${esc(t)}</text>`;
+    }
+    if (ambSota && primerTros) {
+      const t = opts.sota(e.idx);
+      if (t) {
+        const ample = pes(e.d) * unitat;                       // si hi ha poc lloc, lletra més petita
+        const mida = ample < 36 ? 12 : ample < 48 ? 15 : 19;
+        s += `<text x="${x0}" y="${ySota}" font-size="${mida}" font-weight="bold" fill="${t === '?' ? '#c92a2a' : '#000'}" text-anchor="middle">${esc(t)}</text>`;
+      }
+    }
     s += `<ellipse class="cap-nota" data-idx="${e.idx}" cx="${x0}" cy="${y}" rx="6.6" ry="5" transform="rotate(-20 ${x0} ${y})" fill="${buida ? '#fff' : '#000'}" stroke="#000" stroke-width="${buida ? 2 : 1}"/>`;
     if (p.alt) {
       const ax = x0 - 17;
@@ -2372,6 +2436,32 @@ function svgMelodia(m, opts = {}) {
     { ...opts, compas: i === 0, repInici: !!m.repeticio && i === 0, repFi: !!m.repeticio && i === sistemes.length - 1 })}</div>`).join('');
 }
 
+/* ---- Saxo: pentagrama transportat amb els números de digitació ---- */
+function svgSaxo(m, opts = {}) {
+  const tipus = SAXO.SAXOS[m.saxo] ? m.saxo : SAXO.PER_DEFECTE;
+  const sx = SAXO.SAXOS[tipus];
+  const transportat = opts.vista !== 'real';           // a la impressió i a les targetes: sempre transportat
+  const notes = (m.notes || []).map(n => ({ ...n, p: n.p && transportat ? SAXO.transposar(n.p, sx.semi, sx.diat) : n.p }));
+  const numeros = (m.notes || []).map(n => n.p ? (SAXO.digitacio(n.p, tipus) || '?') : '');
+  const nomsEscrits = (m.notes || []).map(n => n.p ? SAXO.nomCatala(SAXO.escrita(n.p, tipus)) : '');
+  let html = svgMelodia({ ...m, notes }, { selIdx: opts.selIdx, sota: i => numeros[i], sobre: m.noms ? i => nomsEscrits[i] : null });
+  if (m.diagrames) html += diagramesSaxo(m, tipus);
+  return html;
+}
+// Fila amb el diagrama de claus de cada posició que surt a la melodia (de greu a agut)
+function diagramesSaxo(m, tipus) {
+  const vistos = new Map();
+  (m.notes || []).forEach(n => {
+    if (!n.p) return;
+    const e = SAXO.escrita(n.p, tipus), num = SAXO.digitacioEscrita(e);
+    if (num && !vistos.has(num)) vistos.set(num, { midi: SAXO.midiDe(e), nom: SAXO.nomCatala(e) });
+  });
+  if (!vistos.size) return '';
+  const llista = [...vistos.entries()].sort((a, b) => a[1].midi - b[1].midi);
+  return `<div class="saxo-diagrames">${llista.map(([num, d]) =>
+    `<figure><div class="saxo-num">${esc(num)}</div>${SAXO.svgDiagrama(num, { ample: 78 })}<figcaption>${esc(d.nom)}</figcaption></figure>`).join('')}</div>`;
+}
+
 /* ---- Editor ---- */
 function iconaFigura(d) {
   const buida = d >= 8, ambPlica = d < 16;
@@ -2394,7 +2484,15 @@ function iconaFigura(d) {
 })();
 function melRender() {
   const cont = $('melodia-editor');
-  cont.innerHTML = svgMelodia(dadesMelodiaActual(), { selIdx: melSel });
+  const dades = dadesMelodiaActual();
+  if (melInst === 'saxo') {
+    cont.innerHTML = svgSaxo(dades, { selIdx: melSel, vista: $('melodia-vista').value });
+    const fora = melNotes.filter(n => n.p && !SAXO.dinsRang(n.p, melSaxo)).length;
+    $('mel-saxo-avis').textContent = fora ? `⚠️ ${fora} nota${fora > 1 ? 's' : ''} fora del rang del saxo (sense número)` : '';
+  } else {
+    cont.innerHTML = svgMelodia(dades, { selIdx: melSel });
+    $('mel-saxo-avis').textContent = '';
+  }
   cont.querySelectorAll('svg').forEach((svg, si) => {
     svg.style.cursor = 'crosshair';
     svg.addEventListener('mousemove', e => melFantasma(e, svg));
@@ -2439,10 +2537,12 @@ function melClic(e, svg) {
   if (melSilenci) { melAfegir(null); return; }
   const diat = melDiatDesDeY(p.y, svg);
   if (diat < MEL_BASE - 10 || diat > MEL_BASE + 20) return;
-  melAfegir(melPitchDe(diat, melAlt));
+  melAfegir(melGuardable(melPitchDe(diat, melAlt)));
 }
 function dadesMelodiaActual() {
-  return { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value, repeticio: $('melodia-repeticio').checked };
+  const d = { nom: $('melodia-titol').value.trim(), notes: JSON.parse(JSON.stringify(melNotes)), compas: $('melodia-compas').value, compassos: $('melodia-compassos').value, repeticio: $('melodia-repeticio').checked };
+  if (melInst === 'saxo') { d.saxo = melSaxo; d.noms = $('melodia-noms').checked; d.diagrames = $('melodia-diagrames').checked; }
+  return d;
 }
 function melConvertirAntic(it) {                    // melodies fetes amb el piano roll antic
   if (!Array.isArray(it.notes) || !it.notes.length || it.notes[0].startCol === undefined) return it;
@@ -2458,9 +2558,16 @@ function melConvertirAntic(it) {                    // melodies fetes amb el pia
   });
   return { ...it, notes: noves };
 }
-function obrirEditorMelodia(it = null) {
+function obrirEditorMelodia(it = null, inst) {
   melodiaEditant = it ? it.id : null;
   const dades = it ? melConvertirAntic(it) : null;
+  const instFinal = it ? it.inst : (inst || 'teclat');
+  const tipusSaxo = (it && it.saxo) || SAXO.PER_DEFECTE;
+  $('melodia-inst').value = instFinal === 'saxo' ? 'saxo:' + tipusSaxo : 'teclat';
+  $('melodia-vista').value = 'real';
+  $('melodia-noms').checked = !!(dades && dades.noms);
+  $('melodia-diagrames').checked = !!(dades && dades.diagrames);
+  melCanviarInstrument($('melodia-inst').value);
   $('melodia-titol').value = dades ? dades.nom : '';
   $('melodia-compas').value = dades ? dades.compas : '4/4';
   $('melodia-compassos').value = dades ? dades.compassos : '2';
@@ -2479,8 +2586,8 @@ function guardarMelodia() {
   aturarAudioMelodia();
   const dades = dadesMelodiaActual();
   if (!dades.notes.some(n => n.p)) { alert('Encara no hi ha cap nota.'); return; }
-  if (melodiaEditant) Object.assign(trobarItem(melodiaEditant), dades);
-  else afegirItem({ inst: 'teclat', tipus: 'melodia', ...dades }, false);
+  if (melodiaEditant) { const it = trobarItem(melodiaEditant); it.inst = melInst; if (melInst !== 'saxo') { delete it.saxo; delete it.noms; } Object.assign(it, dades); }
+  else afegirItem({ inst: melInst, tipus: 'melodia', ...dades }, false);
   tancarModal('modalMelodia');
   renderTot();
 }
@@ -3820,7 +3927,7 @@ async function importarEnllac() {
 const URL_BIBLIOTECA = 'https://script.google.com/macros/s/AKfycbw2lhxNhxvT2EJGhQhpFlOAhT3M_RIrqN_tDQS0oChLULzyeX5dOP_HZLehm6SfXeWS/exec';
 const CLAU_CODI = 'generador-diagrames-codi', CLAU_AUTOR = 'generador-diagrames-autor';
 let biblioLlista = [];
-const XIP_INST = { guitarra: ['Guitarra', '#007bff'], teclat: ['Teclat', '#e83e8c'], baix: ['Baix', '#6f42c1'], bateria: ['Bateria', '#fd7e14'], estructura: ['Lletra', '#2f9e44'] };
+const XIP_INST = { guitarra: ['Guitarra', '#007bff'], teclat: ['Teclat', '#e83e8c'], baix: ['Baix', '#6f42c1'], bateria: ['Bateria', '#fd7e14'], saxo: ['Saxo', '#0ca678'], estructura: ['Lletra', '#2f9e44'] };
 
 function avis(text, ms = 3500) {
   const a = $('avis'); a.textContent = text; a.style.display = 'block';
@@ -4037,6 +4144,157 @@ function importarJSON(input) {
   r.onload = () => { try { if (!carregarEstat(JSON.parse(r.result))) throw 0; } catch (e) { alert('Aquest fitxer no és una cançó vàlida.'); } input.value = ''; };
   r.readAsText(f);
 }
+/* =========================================================
+   IMPORTAR MUSICXML (partitura → melodia de saxo amb números)
+   ---------------------------------------------------------
+   Llegeix un .musicxml/.xml o un .mxl (comprimit) exportat de
+   MuseScore, Sibelius, Finale, Dorico… Agafa una veu d'una part
+   i la converteix a les notes reals; la digitació la posa svgSaxo.
+   ========================================================= */
+async function importarMusicXML(input) {
+  const f = input.files[0]; if (!f) return; input.value = '';
+  try {
+    const xml = /\.mxl$/i.test(f.name) ? await llegirMXL(f) : await f.text();
+    const r = analitzarMusicXML(xml);
+    if (!r.parts.length) throw new Error('No hi ha cap part amb notes.');
+    let part = r.parts.find(p => /sax/i.test(p.nom)) || r.parts[0];
+    if (r.parts.length > 1) {
+      const llista = r.parts.map((p, i) => `${i + 1}. ${p.nom || 'Part ' + (i + 1)}`).join('\n');
+      const tria = prompt(`Aquesta partitura té ${r.parts.length} parts. Quina vols importar?\n\n${llista}`, String(r.parts.indexOf(part) + 1));
+      if (tria === null) return;
+      part = r.parts[Math.max(0, Math.min(r.parts.length - 1, (parseInt(tria) || 1) - 1))];
+    }
+    const tipus = SAXO.SAXOS[$('melodia-inst').value.split(':')[1]] ? $('melodia-inst').value.split(':')[1] : SAXO.PER_DEFECTE;
+    const afegits = itemsDesDePart(part, r.titol || f.name.replace(/\.(musicxml|xml|mxl)$/i, ''), tipus);
+    if (!afegits.length) throw new Error('La part triada no té cap nota.');
+    if (!$('titolInput').value.trim() && r.titol) { $('titolInput').value = r.titol; actualitzarCapcalera(); }
+    renderTot();
+    const avisos = [];
+    if (part.transpose) avisos.push(`la part estava escrita per a un instrument transpositor i s'ha passat a notes reals`);
+    if (part.avisos.length) avisos.push(...part.avisos);
+    avis(`🎷 Importada «${part.nom || r.titol}»: ${afegits.length} bloc${afegits.length > 1 ? 's' : ''} de saxo${avisos.length ? '. ' + avisos.join('; ') : ''}.`, 7000);
+  } catch (e) {
+    console.error(e);
+    alert("No s'ha pogut importar la partitura.\n\n" + (e && e.message ? e.message : e));
+  }
+}
+
+// Fitxer .mxl = zip amb META-INF/container.xml que apunta al MusicXML
+async function llegirMXL(f) {
+  const buf = new Uint8Array(await f.arrayBuffer());
+  const dv = new DataView(buf.buffer);
+  let eocd = -1;
+  for (let i = buf.length - 22; i >= Math.max(0, buf.length - 70000); i--) if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  if (eocd < 0) throw new Error('El fitxer .mxl no és un zip vàlid.');
+  const n = dv.getUint16(eocd + 10, true), cdOff = dv.getUint32(eocd + 16, true);
+  const entrades = []; let p = cdOff;
+  const td = new TextDecoder();
+  for (let i = 0; i < n; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const metode = dv.getUint16(p + 10, true), mida = dv.getUint32(p + 20, true), midaOrig = dv.getUint32(p + 24, true);
+    const nl = dv.getUint16(p + 28, true), el = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    entrades.push({ nom: td.decode(buf.subarray(p + 46, p + 46 + nl)), metode, mida, midaOrig, off });
+    p += 46 + nl + el + cl;
+  }
+  const llegir = async e => {
+    const h = e.off, nl = dv.getUint16(h + 26, true), el = dv.getUint16(h + 28, true);
+    const dades = buf.subarray(h + 30 + nl + el, h + 30 + nl + el + e.mida);
+    if (e.metode === 0) return td.decode(dades);
+    if (e.metode !== 8) throw new Error('Compressió del .mxl no suportada.');
+    if (typeof DecompressionStream === 'undefined') throw new Error('Aquest navegador no pot obrir fitxers .mxl: exporta la partitura com a MusicXML sense comprimir (.musicxml).');
+    const ds = new DecompressionStream('deflate-raw');
+    const w = ds.writable.getWriter(); w.write(dades); w.close();
+    return await new Response(ds.readable).text();
+  };
+  let arrel = null;
+  const cont = entrades.find(e => e.nom === 'META-INF/container.xml');
+  if (cont) { const m = (await llegir(cont)).match(/full-path="([^"]+)"/); if (m) arrel = entrades.find(e => e.nom === m[1]); }
+  if (!arrel) arrel = entrades.find(e => /\.(musicxml|xml)$/i.test(e.nom) && !/^META-INF\//.test(e.nom));
+  if (!arrel) throw new Error('El .mxl no conté cap MusicXML.');
+  return llegir(arrel);
+}
+
+function analitzarMusicXML(text) {
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  if (doc.querySelector('parsererror')) throw new Error('El fitxer no és un MusicXML ben format.');
+  if (doc.querySelector('score-timewise')) throw new Error('Format «timewise» no suportat: exporta la partitura en format «partwise» (és el normal).');
+  const txt = (el, sel) => { const x = el && el.querySelector(sel); return x ? x.textContent.trim() : ''; };
+  const titol = txt(doc, 'work > work-title') || txt(doc, 'movement-title') || '';
+  const noms = {};
+  doc.querySelectorAll('part-list > score-part').forEach(sp => noms[sp.getAttribute('id')] = txt(sp, 'part-name'));
+  const parts = [];
+  doc.querySelectorAll('score-partwise > part').forEach(part => {
+    let divisions = 1, num = 4, den = 4, transpose = null, veu = null;
+    const avisos = []; let compasCanvia = false;
+    const mesures = [];
+    part.querySelectorAll(':scope > measure').forEach((me, mi) => {
+      const d = txt(me, 'attributes > divisions'); if (d) divisions = +d || divisions;
+      const tn = txt(me, 'attributes > time > beats'), tdn = txt(me, 'attributes > time > beat-type');
+      if (tn && tdn) { if (mesures.length && (+tn !== num || +tdn !== den)) compasCanvia = true; if (!mesures.length) { num = +tn; den = +tdn; } }
+      const tr = me.querySelector('attributes > transpose');
+      if (tr) transpose = { semi: (+txt(tr, 'chromatic') || 0) + 12 * (+txt(tr, 'octave-change') || 0), diat: (+txt(tr, 'diatonic') || 0) + 7 * (+txt(tr, 'octave-change') || 0) };
+      const passosPerTemps = den === 8 ? 2 : 4, passosPerCompas = num * passosPerTemps;
+      const notes = []; let pos = 0;        // pos en passos (semicorxeres), amb decimals
+      me.querySelectorAll(':scope > note').forEach(nt => {
+        if (nt.querySelector('grace') || nt.querySelector('chord')) return;
+        const v = txt(nt, 'voice'); if (veu === null && v) veu = v; if (v && veu !== null && v !== veu) return;
+        const dur = (+txt(nt, 'duration') || 0) * 4 / divisions;
+        if (!dur) return;
+        let p = null;
+        const pit = nt.querySelector('pitch');
+        if (pit) { const alt = Math.round(+txt(pit, 'alter') || 0); p = SAXO.transposar(txt(pit, 'step') + txt(pit, 'octave'), alt, 0); }
+        const lligadaAbans = !!nt.querySelector('tie[type="stop"], notations > tied[type="stop"]');
+        const ant = notes[notes.length - 1];
+        if (lligadaAbans && ant && ant.p === p && p) ant.d += dur;
+        else notes.push({ d: dur, p, lligaSeguent: !!nt.querySelector('tie[type="start"], notations > tied[type="start"]') });
+        pos += dur;
+      });
+      // arrodonim a passos sencers acumulant (els tresets perden una mica)
+      let acc = 0, arr = 0;
+      notes.forEach(n => { acc += n.d; const fins = Math.round(acc); n.d = Math.max(0, fins - arr); arr = fins; });
+      const nets = notes.filter(n => n.d > 0);
+      const total = nets.reduce((a, n) => a + n.d, 0);
+      if (notes.some(n => Math.abs(n.d - Math.round(n.d)) > 0.01)) avisos.push('hi havia figures irregulars (tresets) que s’han ajustat');
+      if (total < passosPerCompas) { if (mi === 0) nets.unshift({ d: passosPerCompas - total, p: null }); else nets.push({ d: passosPerCompas - total, p: null }); }
+      else if (total > passosPerCompas) { let q = passosPerCompas; nets.forEach(n => { n.d = Math.min(n.d, q); q -= n.d; }); }
+      mesures.push({ notes: nets.filter(n => n.d > 0), num, den, lligaSeguent: !!(nets.length && nets[nets.length - 1].lligaSeguent) });
+    });
+    if (compasCanvia) avisos.push('el compàs canvia a mitja partitura i s’ha mantingut el primer');
+    const id = part.getAttribute('id');
+    if (mesures.some(m => m.notes.some(n => n.p))) parts.push({ id, nom: noms[id] || '', transpose, mesures, avisos: [...new Set(avisos)] });
+  });
+  return { titol, parts };
+}
+
+// Converteix la part a blocs de 12 compassos (notes reals) i els afegeix com a saxo
+const COMPASSOS_PER_BLOC = 12;
+function itemsDesDePart(part, titol, tipus) {
+  const tr = part.transpose || { semi: 0, diat: 0 };
+  const real = p => p ? SAXO.transposar(p, tr.semi, tr.diat) : null;
+  let ms = part.mesures.map(m => ({ ...m, notes: m.notes.map(n => ({ d: n.d, p: real(n.p) })) }));
+  const ambNotes = m => m.notes.some(n => n.p);
+  let primer = ms.findIndex(ambNotes); let darrer = ms.length - 1; while (darrer > primer && !ambNotes(ms[darrer])) darrer--;
+  if (primer < 0) return [];
+  ms = ms.slice(primer, darrer + 1);
+  const { num, den } = ms[0];
+  const compas = `${num}/${den}`;
+  const sel = $('melodia-compas'); if (sel && !Array.from(sel.options).some(o => o.value === compas)) sel.add(new Option(compas, compas));
+  const blocs = trossos(ms, COMPASSOS_PER_BLOC);
+  const afegits = [];
+  blocs.forEach((b, i) => {
+    // notes lligades entre compassos del mateix bloc: les ajuntem
+    const notes = [];
+    b.forEach((m, j) => m.notes.forEach((n, k) => {
+      const ant = notes[notes.length - 1];
+      if (k === 0 && j > 0 && b[j - 1].lligaSeguent && ant && ant.p === n.p && n.p) ant.d += n.d; else notes.push({ d: n.d, p: n.p });
+    }));
+    const inici = primer + i * COMPASSOS_PER_BLOC + 1;
+    const nom = blocs.length > 1 ? `${titol} · compassos ${inici}–${inici + b.length - 1}` : (primer > 0 ? `${titol} · des del compàs ${inici}` : titol);
+    afegits.push(afegirItem({ inst: 'saxo', tipus: 'melodia', saxo: tipus, nom, notes, compas, compassos: String(b.length), repeticio: false, noms: false }, false));
+  });
+  return afegits;
+}
+
 function netejarTot() {
   if (!confirm('Vols esborrar-ho tot i començar de zero?')) return;
   items = [];
