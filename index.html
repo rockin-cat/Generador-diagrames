@@ -4106,7 +4106,7 @@ function pintarBiblioteca() {
     const icones = (c.instruments || []).map(i => XIP_INST[i] ? `<span class="xip" style="background:${XIP_INST[i][1]}">${XIP_INST[i][0]}</span>` : '').join('');
     return `<div class="biblio-fila"><div><div class="t">${xipNivell(c.nivell)}${esc(c.titol || c.nom)}${c.artista ? ' <span style="font-weight:normal;color:#666">— ' + esc(c.artista) + '</span>' : ''}</div>
       <div class="m">${xipIdioma(c.idioma)}${c.autor ? 'Compartida per ' + esc(c.autor) + ' · ' : ''}${data}</div></div>
-      <span class="i">${icones}</span><button class="btn-accio" style="width:auto" onclick="obrirDeBiblioteca('${esc(c.id)}')">Obrir</button></div>`;
+      <span class="i">${icones}</span><button class="btn-accio" style="width:auto" data-id="${esc(c.id)}" onclick="obrirDeBiblioteca(this.dataset.id)">Obrir</button></div>`;
   }).join('');
 }
 async function obrirDeBiblioteca(id) {
