@@ -366,7 +366,7 @@ body:not(.mode-est) .nomes-est { display: none !important; }
    IMATGE DE MARCA ROCKIN (com rockin.cat i l'Entrenament auditiu)
    ========================================================= */
 :root { --rk-groc: #FDBE10; --rk-tinta: #221F20; --rk-fons: #FAF8F3; --rk-suau: #F4F1EA; --rk-linia: #E2DDD3; --rk-gris: #6B6461; }
-body { font-family: 'Ubuntu', Helvetica, Arial, sans-serif; background: var(--rk-fons); color: var(--rk-tinta); padding-top: 68px; }
+body { font-family: 'Ubuntu', Helvetica, Arial, sans-serif; background: var(--rk-fons); color: var(--rk-tinta); padding-top: 56px; }
 .topbar { position: fixed; top: 0; left: 0; right: 0; height: 68px; z-index: 1500; background: var(--rk-groc); color: var(--rk-tinta); display: flex; align-items: center; gap: 16px; padding: 0 20px; }
 .topbar .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
 .topbar .brand img { height: 44px; width: auto; display: block; }
@@ -401,16 +401,21 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 }
 </style>
 <style id="estil-impressio">@page { size: A4 landscape; margin: 0; }</style>
+<link rel="stylesheet" href="/marca/capcalera.css">
 </head>
 <body>
 
-<header class="topbar">
-  <a class="brand" href="https://rockin.cat" target="_blank" rel="noopener"><img src="https://rockin.cat/wp-content/uploads/2022/07/rockin-logo.svg" alt="Rockin" onerror="this.outerHTML='<b style=&quot;font-family:Lora,serif;font-size:30px;letter-spacing:.02em&quot;>ROCKIN</b>'"><span>Generador de diagrames</span></a>
+<header class="topbar rk-cap">
+  <div class="rk-marca">
+    <a class="rk-totes" href="/" title="Totes les eines Rockin"><img class="rk-logo" src="/marca/rockin-logo-fosc.png" alt="Rockin" width="382" height="72"></a>
+    <span class="rk-sep" aria-hidden="true"></span>
+    <span class="rk-eina">Generador de diagrames</span>
+  </div>
 </header>
 
 <div class="sidebar">
   <div class="sidebar-header"><img src="marca/rockin-logo.png" alt="" onerror="this.style.display='none'"><h1>Diagrames Musicals</h1></div>
-  <div class="pestanyes"><button id="tab-diag" class="actiu" onclick="canviarMode('diag')">🎸 Diagrames</button><button id="tab-est" onclick="canviarMode('est')">📝 Lletra i estructura</button></div>
+  <div class="pestanyes"><button id="tab-diag" class="actiu" onclick="canviarMode('diag')">Diagrames</button><button id="tab-est" onclick="canviarMode('est')">Lletra i estructura</button></div>
   <div class="sidebar-content">
     <div class="grup-control">
       <label for="titolInput">Títol de la cançó</label>
@@ -420,22 +425,22 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <label for="artistaInput">Grup / artista</label>
       <input type="text" id="artistaInput" placeholder="Escriu el grup o artista" autocomplete="off" oninput="actualitzarCapcalera()">
     </div>
-    <button class="btn-accio" style="background:#0ca678" onclick="obrirImportar()">📥 Importar acords i lletra</button>
+    <button class="btn-accio" style="background:#0ca678" onclick="obrirImportar()">Importar acords i lletra</button>
     <div class="nomes-diag" style="display:flex;flex-direction:column;gap:14px">
     <div class="grup-control">
       <label for="acordsInput">Acords de la cançó</label>
       <input type="text" id="acordsInput" placeholder="Escriu els acords separats per espais" autocomplete="off" oninput="desar()">
       <p class="ajuda">Majors: <b>D</b> · menors: <b>D-</b> o <b>Dm</b> · power chords: <b>D5</b> · alteracions: <b>F#</b>, <b>Bb</b>.</p>
-      <button class="btn-accio" style="background:#6f42c1" onclick="omplirDesDeAcords()">⚡ Omplir guitarra i teclat</button>
+      <button class="btn-accio" style="background:#6f42c1" onclick="omplirDesDeAcords()">Omplir guitarra i teclat</button>
     </div>
 
     <div class="hr-div"></div>
     <div>
-      <label class="titol-inst" style="color:#007bff">🎸 Guitarra</label>
+      <label class="titol-inst" style="color:#007bff">Guitarra</label>
       <div class="fila-botons">
-        <button class="btn-accio btn-outline" style="color:#007bff;border-color:#007bff" onclick="obrirCataleg('guitarra')">🖼️ Catàleg d'acords</button>
-        <button class="btn-accio btn-outline" style="color:#17a2b8;border-color:#17a2b8" onclick="obrirEditorGuitarra()">✏️ Dibuixar acord</button>
-        <button class="btn-accio btn-outline" style="color:#6f42c1;border-color:#6f42c1" onclick="obrirEditorTab('guitarra')">🎼 Escriure tablatura</button>
+        <button class="btn-accio btn-outline" style="color:#007bff;border-color:#007bff" onclick="obrirCataleg('guitarra')">Catàleg d'acords</button>
+        <button class="btn-accio btn-outline" style="color:#17a2b8;border-color:#17a2b8" onclick="obrirEditorGuitarra()">Dibuixar acord</button>
+        <button class="btn-accio btn-outline" style="color:#6f42c1;border-color:#6f42c1" onclick="obrirEditorTab('guitarra')">Escriure tablatura</button>
         <div class="tapar-resum"><span>Celleta:</span><select id="opt-celleta" onchange="canviarCelleta(this.value)" style="width:auto;padding:4px 6px"></select></div>
         <p class="ajuda" id="celleta-ajuda" style="display:none;margin:0">Escriu els acords <b>reals</b> (els que sonen). La guitarra mostrarà la posició que s'ha de tocar amb la celleta.</p>
         <div class="tapar-resum"><span id="tapar-text">Cap acord amb cordes tapades</span></div>
@@ -444,38 +449,38 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       </div>
     </div>
     <div>
-      <label class="titol-inst" style="color:#e83e8c">🎹 Teclat</label>
+      <label class="titol-inst" style="color:#e83e8c">Teclat</label>
       <div class="fila-botons">
-        <button class="btn-accio btn-outline" style="color:#e83e8c;border-color:#e83e8c" onclick="obrirCataleg('teclat')">🖼️ Catàleg d'acords</button>
-        <button class="btn-accio btn-outline" style="color:#c0136a;border-color:#c0136a" onclick="obrirEditorTeclat()">✏️ Dibuixar acord</button>
-        <button class="btn-accio btn-outline" style="color:#9b59b6;border-color:#9b59b6" onclick="obrirEditorMelodia()">🎵 Escriure melodia</button>
+        <button class="btn-accio btn-outline" style="color:#e83e8c;border-color:#e83e8c" onclick="obrirCataleg('teclat')">Catàleg d'acords</button>
+        <button class="btn-accio btn-outline" style="color:#c0136a;border-color:#c0136a" onclick="obrirEditorTeclat()">Dibuixar acord</button>
+        <button class="btn-accio btn-outline" style="color:#9b59b6;border-color:#9b59b6" onclick="obrirEditorMelodia()">Escriure melodia</button>
       </div>
     </div>
     <div>
-      <label class="titol-inst" style="color:#6f42c1">🎸 Baix</label>
+      <label class="titol-inst" style="color:#6f42c1">Baix</label>
       <div class="fila-botons">
-        <button class="btn-accio btn-outline" style="color:#6f42c1;border-color:#6f42c1" onclick="obrirEditorBaix()">✏️ Escriure el baix</button>
+        <button class="btn-accio btn-outline" style="color:#6f42c1;border-color:#6f42c1" onclick="obrirEditorBaix()">Escriure el baix</button>
       </div>
     </div>
     <div>
-      <label class="titol-inst" style="color:#fd7e14">🥁 Bateria</label>
+      <label class="titol-inst" style="color:#fd7e14">Bateria</label>
       <div class="fila-botons">
-        <button class="btn-accio btn-outline" style="color:#fd7e14;border-color:#fd7e14" onclick="obrirCataleg('bateria')">🖼️ Catàleg de patrons</button>
-        <button class="btn-accio btn-outline" style="color:#d35400;border-color:#d35400" onclick="obrirEditorBateria()">🥁 Seqüenciador</button>
+        <button class="btn-accio btn-outline" style="color:#fd7e14;border-color:#fd7e14" onclick="obrirCataleg('bateria')">Catàleg de patrons</button>
+        <button class="btn-accio btn-outline" style="color:#d35400;border-color:#d35400" onclick="obrirEditorBateria()">Seqüenciador</button>
       </div>
     </div>
     <div>
-      <label class="titol-inst" style="color:#0ca678">🎷 Saxo</label>
+      <label class="titol-inst" style="color:#0ca678">Saxo</label>
       <div class="fila-botons">
-        <button class="btn-accio btn-outline" style="color:#0ca678;border-color:#0ca678" onclick="obrirEditorMelodia(null, 'saxo')">🎵 Escriure melodia</button>
-        <button class="btn-accio btn-outline" style="color:#099268;border-color:#099268" onclick="document.getElementById('fitxerMusicXML').click()">📂 Importar partitura (MusicXML)</button>
+        <button class="btn-accio btn-outline" style="color:#0ca678;border-color:#0ca678" onclick="obrirEditorMelodia(null, 'saxo')">Escriure melodia</button>
+        <button class="btn-accio btn-outline" style="color:#099268;border-color:#099268" onclick="document.getElementById('fitxerMusicXML').click()">Importar partitura (MusicXML)</button>
         <input type="file" id="fitxerMusicXML" accept=".musicxml,.xml,.mxl,application/vnd.recordare.musicxml+xml,application/vnd.recordare.musicxml" style="display:none" onchange="importarMusicXML(this)">
         <p class="ajuda" style="margin:0">Les notes s'escriuen <b>reals</b> (com sonen a la banda) i l'eina les transporta i hi posa els <b>números de digitació</b> del saxo alt o tenor.</p>
       </div>
     </div>
 
     <div class="hr-div"></div>
-    <label>📄 Opcions de pàgina</label>
+    <label>Opcions de pàgina</label>
     <label class="check"><input type="checkbox" id="opt-ordre" checked onchange="desar()"> Mostrar «Ordre d'acords» (guitarra i teclat)</label>
     <input type="text" id="ordreInput" placeholder="Ordre d'acords (opcional)" autocomplete="off" oninput="desar()">
     <label class="check"><input type="checkbox" id="opt-colors" checked onchange="renderTot()"> Noms d'acords en color</label>
@@ -488,7 +493,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
         <option value="endirecte">En Directe</option>
         <option value="propia">La meva imatge (escola, institut…)</option>
       </select>
-      <button class="btn-accio btn-outline" style="width:auto" title="Pujar una imatge" onclick="document.getElementById('fitxerMarca').click()">📁</button>
+      <button class="btn-accio btn-outline" style="width:auto" title="Pujar una imatge" onclick="document.getElementById('fitxerMarca').click()">Puja</button>
       <input type="file" id="fitxerMarca" accept="image/*" style="display:none" onchange="carregarMarca(this)">
     </div>
     <div class="marca-previa" id="marca-previa"></div>
@@ -499,30 +504,30 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <label class="check"><input type="checkbox" id="opt-ritmica" checked onchange="desar()"> Baix i bateria a la mateixa pàgina</label>
     </div>
     <div class="nomes-est" style="display:flex;flex-direction:column;gap:10px">
-      <label>📄 Opcions de pàgina</label>
+      <label>Opcions de pàgina</label>
       <input type="text" id="marcaPeuEst" placeholder="Text de peu de pàgina (opcional)" oninput="$('marcaPeuInput').value=this.value;desar()">
     </div>
 
-    <button class="btn-accio btn-outline" id="btn-previsualitzar" onclick="togglePrevisualitzar()">👁️ Vista prèvia A4</button>
-    <button class="btn-accio btn-imprimir" onclick="imprimirAra()">🖨️ Imprimir / PDF</button>
+    <button class="btn-accio btn-outline" id="btn-previsualitzar" onclick="togglePrevisualitzar()">Vista prèvia A4</button>
+    <button class="btn-accio btn-imprimir" onclick="imprimirAra()">Imprimir / PDF</button>
     <p class="ajuda" id="ajuda-imprimir">Al diàleg d'impressió tria <b>A4</b>, orientació <b>horitzontal</b> i marges <b>cap</b>/per defecte.</p>
     <div class="hr-div"></div>
-    <label>👥 Professorat</label>
-    <button class="btn-accio btn-compartir" onclick="compartirCanco()">📤 Compartir amb el professorat</button>
-    <button class="btn-accio btn-outline" onclick="obrirBiblioteca()">📚 Biblioteca compartida</button>
+    <label>Professorat</label>
+    <button class="btn-accio btn-compartir" onclick="compartirCanco()">Compartir amb el professorat</button>
+    <button class="btn-accio btn-outline" onclick="obrirBiblioteca()">Biblioteca compartida</button>
     <button class="btn-accio btn-outline" id="btn-recuperar" style="display:none" onclick="recuperarUltima()">↩️ Recuperar l'última cançó</button>
     <div class="fila-2">
-      <button class="btn-accio btn-outline" onclick="exportarJSON()">💾 Desar</button>
-      <button class="btn-accio btn-outline" onclick="document.getElementById('fitxerJSON').click()">📂 Obrir</button>
+      <button class="btn-accio btn-outline" onclick="exportarJSON()">Desar</button>
+      <button class="btn-accio btn-outline" onclick="document.getElementById('fitxerJSON').click()">Obrir</button>
     </div>
     <input type="file" id="fitxerJSON" accept=".json,application/json" style="display:none" onchange="importarJSON(this)">
-    <button class="btn-accio btn-netejar" onclick="netejarTot()">🗑️ Començar de nou</button>
+    <button class="btn-accio btn-netejar" onclick="netejarTot()">Començar de nou</button>
   </div>
 </div>
 
 <div class="workspace-container" id="workspace">
   <h2 id="titolMostrat" class="titol-canco-global">TÍTOL DE LA CANÇÓ</h2>
-  <p class="buit nomes-diag" id="missatgeBuit">Escriu els acords de la cançó i prem <b>⚡ Omplir guitarra i teclat</b>, o afegeix diagrames des dels catàlegs i editors. Arrossega les targetes per canviar-ne l'ordre.</p>
+  <p class="buit nomes-diag" id="missatgeBuit">Escriu els acords de la cançó i prem <b>Omplir guitarra i teclat</b>, o afegeix diagrames des dels catàlegs i editors. Arrossega les targetes per canviar-ne l'ordre.</p>
   <div id="seccions" class="nomes-diag" style="width:100%;display:flex;flex-direction:column;align-items:center"></div>
   <div class="est-editor nomes-est">
     <div class="est-card">
@@ -590,7 +595,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 <!-- ===== IMPORTAR ===== -->
 <div id="modalImportar" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut" style="max-width:760px;text-align:left">
-    <h2 style="text-align:center;color:#0ca678">📥 Importar acords i lletra</h2>
+    <h2 style="text-align:center;color:#0ca678">Importar acords i lletra</h2>
     <p class="ajuda" style="text-align:center;margin-bottom:16px">L'eina omple sola els diagrames de guitarra i teclat, la lletra i l'estructura. Després ho pots retocar tot.</p>
     <label>Opció 1 · Enllaç de Cifra Club o Ultimate Guitar</label>
     <div style="display:flex;gap:8px;margin:6px 0 4px">
@@ -612,7 +617,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 <!-- ===== BIBLIOTECA COMPARTIDA ===== -->
 <div id="modalCompartir" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut" style="max-width:460px">
-    <h2>📤 Compartir amb el professorat</h2>
+    <h2>Compartir amb el professorat</h2>
     <p class="ajuda" style="margin-bottom:12px">La cançó quedarà a la biblioteca compartida perquè la resta de professorat la pugui obrir i imprimir.</p>
     <label style="font-weight:bold">El teu nom (sortirà a la biblioteca)</label>
     <input type="text" id="comp-autor" style="width:100%;margin:6px 0 14px" autocomplete="off">
@@ -621,24 +626,24 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <label style="font-weight:bold">En quin idioma és?</label>
     <div class="nivell-tria" id="comp-idioma"></div>
     <div style="display:flex;justify-content:center;gap:10px">
-      <button class="btn-accio" style="width:auto" onclick="confirmarCompartir()">📤 Compartir</button>
+      <button class="btn-accio" style="width:auto" onclick="confirmarCompartir()">Compartir</button>
       <button class="btn-accio btn-outline" style="width:auto" onclick="tancarModal('modalCompartir')">Cancel·lar</button>
     </div>
   </div>
 </div>
 <div id="modalBiblio" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut" style="max-width:760px">
-    <h2>📚 Biblioteca compartida</h2>
+    <h2>Biblioteca compartida</h2>
     <p class="ajuda" style="margin-bottom:12px">Cançons que ha compartit el professorat. Clica «Obrir» per carregar-la a l'eina, imprimir-la o adaptar-la.</p>
     <div class="biblio-cerca">
-      <input type="text" id="biblio-filtre" placeholder="🔎 Cerca per títol, grup o professor/a" oninput="pintarBiblioteca()">
-      <button class="btn-accio btn-outline" style="width:auto" onclick="obrirBiblioteca(true)">🔄</button>
+      <input type="text" id="biblio-filtre" placeholder="Cerca per títol, grup o professor/a" oninput="pintarBiblioteca()">
+      <button class="btn-accio btn-outline" style="width:auto" onclick="obrirBiblioteca(true)" title="Actualitza">Actualitza</button>
     </div>
     <div class="biblio-nivells" id="biblio-nivells"></div>
     <div class="biblio-nivells" id="biblio-idiomes"></div>
     <div class="biblio-llista" id="biblio-llista"></div>
     <div style="margin-top:14px;display:flex;justify-content:center;gap:10px">
-      <button class="btn-accio btn-outline" onclick="canviarCodiBiblio()">🔑 Canviar codi</button>
+      <button class="btn-accio btn-outline" onclick="canviarCodiBiblio()">Canviar codi</button>
       <button class="btn-accio btn-outline" onclick="tancarModal('modalBiblio')">Tancar</button>
     </div>
   </div>
@@ -657,7 +662,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 <!-- ===== EDITOR GUITARRA ===== -->
 <div id="modalGuitarra" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut" style="max-width:460px">
-    <h2 style="color:#17a2b8">🛠️ Dissenyador d'acords de guitarra</h2>
+    <h2 style="color:#17a2b8">Dissenyador d'acords de guitarra</h2>
     <p class="ajuda">Clica el pal per posar dits (● → 1 → 2 → 3 → 4 → T). Clica a dalt de cada corda per O / X. Dits iguals a la mateixa fila es dibuixen com a cejilla.</p>
     <input type="text" id="guit-titol" placeholder="Nom de l'acord (ex: Cmaj7)" style="margin:12px 0;text-align:center;font-weight:bold">
     <div class="chord-editor-wrapper">
@@ -679,7 +684,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       </div>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:center;gap:10px">
-      <button class="btn-accio" style="background:#28a745" id="btn-guardar-guit" onclick="guardarGuitarra()">✅ Afegir</button>
+      <button class="btn-accio" style="background:#28a745" id="btn-guardar-guit" onclick="guardarGuitarra()">Afegir</button>
       <button class="btn-accio btn-outline" onclick="tancarModal('modalGuitarra')">Cancel·lar</button>
     </div>
   </div>
@@ -688,12 +693,12 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 <!-- ===== EDITOR TECLAT (ACORD) ===== -->
 <div id="modalTeclat" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut" style="max-width:720px">
-    <h2 style="color:#e83e8c">🎹 Dissenyador d'acords de teclat</h2>
+    <h2 style="color:#e83e8c">Dissenyador d'acords de teclat</h2>
     <p class="ajuda">Les notes de l'octava 3 (mà esquerra) es pinten en blau; la resta, en verd, com al llibre.</p>
     <input type="text" id="teclat-titol" placeholder="Nom de l'acord (ex: Cmaj7)" style="margin:12px 0;text-align:center;font-weight:bold">
     <div style="overflow-x:auto;padding-bottom:6px"><div id="piano-editor-keys" class="piano-keys-row"></div></div>
     <div style="margin-top:16px;display:flex;justify-content:center;gap:10px">
-      <button class="btn-accio" id="btn-guardar-teclat" style="background:#e83e8c" onclick="guardarTeclat()">✅ Afegir</button>
+      <button class="btn-accio" id="btn-guardar-teclat" style="background:#e83e8c" onclick="guardarTeclat()">Afegir</button>
       <button class="btn-accio btn-outline" onclick="tancarModal('modalTeclat')">Cancel·lar</button>
     </div>
   </div>
@@ -702,7 +707,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 <!-- ===== EDITOR BATERIA ===== -->
 <div id="modalBateria" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut">
-    <h2 style="color:#d35400">🥁 Seqüenciador de bateria</h2>
+    <h2 style="color:#d35400">Seqüenciador de bateria</h2>
     <input type="text" id="bat-titol" placeholder="Títol que sortirà sota el patró (ex: Uptown Funk - Bruno Mars)" style="margin-bottom:12px;text-align:center;font-weight:bold">
     <div class="reproductor-controls">
       <label style="text-transform:none;display:flex;align-items:center;gap:8px">Compàs
@@ -716,7 +721,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     </div>
     <div style="display:flex;justify-content:center"><div class="drum-llegenda"><div>Charles</div><div>Caixa</div><div>Bombo</div></div><div id="sequencer-editor"></div></div>
     <div style="margin-top:16px;display:flex;justify-content:center;gap:10px">
-      <button class="btn-accio" id="btn-guardar-bat" style="background:#28a745" onclick="guardarBateria()">✅ Afegir</button>
+      <button class="btn-accio" id="btn-guardar-bat" style="background:#28a745" onclick="guardarBateria()">Afegir</button>
       <button class="btn-accio btn-outline" onclick="tancarModal('modalBateria')">Cancel·lar</button>
     </div>
   </div>
@@ -725,16 +730,16 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 <!-- ===== EDITOR BAIX ===== -->
 <div id="modalBaix" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut" style="max-width:1050px">
-    <h2 id="baix-titol-modal" style="color:#6f42c1">🎸 Escriptor de baix</h2>
+    <h2 id="baix-titol-modal" style="color:#6f42c1">Escriptor de baix</h2>
     <p class="ajuda">Tria la figura (rodona, blanca, negra, corxera o semicorxera) i clica el mànec per afegir la nota. Clica una nota del pentagrama per seleccionar-la i canviar-ne la figura o esborrar-la.</p>
     <div class="mel-barra">
       <div id="bx-figures" class="mel-grup"></div>
       <button class="mel-btn" id="bx-puntet" onclick="bxTogglePuntet()" title="Puntet">Puntet</button>
       <button class="mel-btn" id="bx-silenci" onclick="bxAfegir(null)" title="Afegir un silenci">Silenci</button>
-      <button class="mel-btn" id="bx-rep-btn" onclick="bxToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">🔁 Repetició</button>
+      <button class="mel-btn" id="bx-rep-btn" onclick="bxToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">Repetició</button>
       <button class="mel-btn" onclick="bxDesfer()">↩︎ Desfer</button>
-      <button class="mel-btn" onclick="bxEsborrarSel()">🗑️ Esborrar nota</button>
-      <button class="mel-btn" onclick="if(confirm('Esborrar tot el baix?')){bxHistoriaGuardar();bxNotes=[];bxSel=-1;bxRender();}">🗑️ Netejar tot</button>
+      <button class="mel-btn" onclick="bxEsborrarSel()">Esborrar nota</button>
+      <button class="mel-btn" onclick="if(confirm('Esborrar tot el baix?')){bxHistoriaGuardar();bxNotes=[];bxSel=-1;bxRender();}">Netejar tot</button>
     </div>
     <div class="mel-barra">
       <input type="text" id="baix-titol" placeholder="Títol (ex: Opció 1)" style="width:160px">
@@ -752,7 +757,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
     <div id="fretboard-actiu" class="pal-wrapper clicable"></div>
     <div id="baix-editor" class="mel-editor" style="margin-top:10px"></div>
     <div style="margin-top:16px;display:flex;justify-content:center;gap:10px">
-      <button class="btn-accio" id="btn-guardar-baix" style="background:#28a745" onclick="guardarBaix()">✅ Afegir</button>
+      <button class="btn-accio" id="btn-guardar-baix" style="background:#28a745" onclick="guardarBaix()">Afegir</button>
       <button class="btn-accio btn-outline" onclick="tancarModal('modalBaix')">Cancel·lar</button>
     </div>
   </div>
@@ -760,25 +765,25 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
 
 <div id="modalMelodia" class="modal-overlay" onclick="tancarSiFora(event)">
   <div class="modal-contingut" style="max-width:1050px">
-    <h2 style="color:#9b59b6">🎵 Escriptor de melodia</h2>
+    <h2 style="color:#9b59b6">Escriptor de melodia</h2>
     <p class="ajuda">Tria la figura i clica el pentagrama a l'altura de la nota. Clica una nota per seleccionar-la; després pots canviar-ne la figura, pujar-la o baixar-la amb ↑ ↓, o esborrar-la amb la tecla d'esborrar.</p>
     <div class="mel-barra">
       <div id="mel-figures" class="mel-grup"></div>
       <button class="mel-btn" id="mel-puntet" onclick="melTogglePuntet()" title="Puntet (tecla .)">Puntet</button>
       <button class="mel-btn" id="mel-silenci" onclick="melSilenci=!melSilenci;melRender()" title="Silenci (tecla R)">Silenci</button>
-      <button class="mel-btn" id="mel-rep-btn" onclick="melToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">🔁 Repetició</button>
+      <button class="mel-btn" id="mel-rep-btn" onclick="melToggleRepeticio()" title="Posa els signes de repetició al principi i al final del fragment">Repetició</button>
       <div class="mel-grup" id="mel-alteracions">
         <button class="mel-btn" data-alt="#" onclick="melTriaAlteracio('#')">♯</button>
         <button class="mel-btn" data-alt="b" onclick="melTriaAlteracio('b')">♭</button>
         <button class="mel-btn" data-alt="n" onclick="melTriaAlteracio('n')" title="Becaire: nota natural encara que l'armadura l'alteri">♮</button>
       </div>
       <button class="mel-btn" onclick="melDesfer()" title="Desfer (Ctrl+Z)">↩︎ Desfer</button>
-      <button class="mel-btn" onclick="melEsborrarSel()">🗑️ Esborrar nota</button>
+      <button class="mel-btn" onclick="melEsborrarSel()">Esborrar nota</button>
     </div>
     <div class="mel-barra">
       <input type="text" id="melodia-titol" placeholder="Títol (ex: Opció 1)" style="width:160px">
       <select id="melodia-inst" onchange="melCanviarInstrument(this.value)" style="width:auto" title="Per a quin instrument és la melodia">
-        <option value="teclat">🎹 Teclat</option><option value="saxo:alt">🎷 Saxo alt</option><option value="saxo:tenor">🎷 Saxo tenor</option>
+        <option value="teclat">Teclat</option><option value="saxo:alt">Saxo alt</option><option value="saxo:tenor">Saxo tenor</option>
       </select>
       <span id="mel-saxo-opcions" class="mel-grup" style="display:none">
         <select id="melodia-vista" onchange="melRender()" style="width:auto" title="Què mostra el pentagrama mentre escrius">
@@ -803,14 +808,14 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--rk-groc); o
       <label style="text-transform:none;display:flex;align-items:center;gap:6px">Tempo <input type="number" id="tempo-melodia" value="90" min="40" max="200" style="width:70px"></label>
       <label class="check" style="text-transform:none"><input type="checkbox" id="mel-metronom" checked> Metrònom</label>
       <input type="checkbox" id="melodia-repeticio" hidden>
-      <button class="mel-btn" onclick="if(confirm('Esborrar tota la melodia?')){melGuardarHistoria();melNotes=[];melSel=-1;melRender();}">🗑️ Netejar tot</button>
+      <button class="mel-btn" onclick="if(confirm('Esborrar tota la melodia?')){melGuardarHistoria();melNotes=[];melSel=-1;melRender();}">Netejar tot</button>
       <span class="ajuda" id="mel-so"></span>
       <span class="ajuda" id="mel-info"></span>
       <span class="ajuda" id="mel-saxo-avis" style="color:#c92a2a"></span>
     </div>
     <div id="melodia-editor" class="mel-editor"></div>
     <div style="margin-top:16px;display:flex;justify-content:center;gap:10px">
-      <button class="btn-accio" id="btn-guardar-melodia" style="background:#9b59b6" onclick="guardarMelodia()">✅ Afegir</button>
+      <button class="btn-accio" id="btn-guardar-melodia" style="background:#9b59b6" onclick="guardarMelodia()">Afegir</button>
       <button class="btn-accio btn-outline" onclick="tancarModal('modalMelodia')">Cancel·lar</button>
     </div>
   </div>
@@ -839,7 +844,7 @@ function renderMarca() {
   const v = $('opt-marca').value;
   $('marca-previa').innerHTML = src
     ? `<img src="${src}" alt="" onerror="this.parentElement.innerHTML='<span class=\'ajuda\'>No trobo la imatge</span>'"> <button class="mel-btn" onclick="treureMarcaExtra()">✕ Treure</button>`
-    : (v === 'propia' ? '<span class="ajuda">Puja la imatge amb el botó 📁</span>' : '');
+    : (v === 'propia' ? '<span class="ajuda">Puja la imatge amb el botó «Puja»</span>' : '');
   desar();
   programarPagines();
 }
@@ -1133,7 +1138,7 @@ function renderTot() {
     if (!llista.length) return;
     const sec = document.createElement('div');
     sec.className = 'seccio-embolcall';
-    sec.innerHTML = `<h3 class="titol-seccio">${INSTRUMENTS[inst].icona} ${INSTRUMENTS[inst].nom} <small style="color:#999;font-weight:normal">(${llista.length})</small></h3>`;
+    sec.innerHTML = `<h3 class="titol-seccio">${INSTRUMENTS[inst].nom} <small style="color:#999;font-weight:normal">(${llista.length})</small></h3>`;
     const graella = document.createElement('div');
     graella.className = 'graella-web sec-' + inst;
     graella.dataset.inst = inst;
@@ -1141,7 +1146,7 @@ function renderTot() {
       const card = document.createElement('div');
       card.className = 'acord-item' + (it.tipus === 'melodia' || esTab(it) ? ' melodia' : '');
       card.dataset.id = it.id;
-      card.innerHTML = `<div class="botons-targeta">${editable(it) ? `<button class="btn-targeta btn-editar" title="Editar" onclick="editarItem(${it.id})">✏️</button>` : ''}<button class="btn-targeta btn-eliminar" title="Eliminar" onclick="eliminarItem(${it.id})">✕</button></div>`;
+      card.innerHTML = `<div class="botons-targeta">${editable(it) ? `<button class="btn-targeta btn-editar" title="Editar" aria-label="Editar" onclick="editarItem(${it.id})"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>` : ''}<button class="btn-targeta btn-eliminar" title="Eliminar" onclick="eliminarItem(${it.id})">✕</button></div>`;
       if (esAcord(it)) {
         const n = document.createElement('div');
         n.className = 'nom-acord';
@@ -1533,7 +1538,7 @@ function novaPagina(inst, ambOrdre) {
     + ($('opt-ilustracio').checked ? `<img class="pag-inst-img" src="${srcIlustracio(inst)}" alt="" onerror="this.style.display='none'">` : '')
     + ($('opt-inst').checked ? `<span class="pag-inst" style="left:22mm">${INSTRUMENTS[inst].nom}</span>` : '')
     + `<h1>${esc(cap)}</h1>`
-    + (inst === 'guitarra' && celleta ? `<div class="pag-celleta">🎸 Celleta al ${ordinalTraste(celleta)} trast</div>` : '')
+    + (inst === 'guitarra' && celleta ? `<div class="pag-celleta">Celleta al ${ordinalTraste(celleta)} trast</div>` : '')
     + `<div class="pag-logos">${marca ? `<img class="pag-logo" src="${marca}" alt="" onerror="this.style.display='none'">` : ''}<img class="pag-logo" src="${LOGO_ROCKIN}" alt="ROCKIN" onerror="this.style.display='none'"></div>`
     + `</header><div class="pag-cos"></div>`;
   const peu = $('marcaPeuInput').value.trim();
@@ -1642,7 +1647,7 @@ function paginesRitmica(baix, bat) {
   const blocs = [];
   baix.forEach((it, i) => {
     const b = document.createElement('div'); b.className = 'bloc-flux';
-    if (i === 0) b.innerHTML = '<div class="subtitol-pag">🎸 Baix</div>';
+    if (i === 0) b.innerHTML = '<div class="subtitol-pag">Baix</div>';
     if (titolItem(it)) { const t = document.createElement('div'); t.className = 'titol-bloc'; t.textContent = titolItem(it); b.appendChild(t); }
     if ($('opt-pal').checked) b.appendChild(construirPal(it, false));
     b.appendChild(contingut(it));
@@ -1652,7 +1657,7 @@ function paginesRitmica(baix, bat) {
   const ample = porFila === 1 ? 118 : porFila === 2 ? 92 : 68;
   trossos(bat, porFila).forEach((fila, i) => {
     const b = document.createElement('div'); b.className = 'bloc-flux';
-    if (i === 0) b.innerHTML = '<div class="subtitol-pag">🥁 Bateria</div>';
+    if (i === 0) b.innerHTML = '<div class="subtitol-pag">Bateria</div>';
     const f = document.createElement('div'); f.className = 'bat-fila';
     fila.forEach(it => f.appendChild(caixaBateria(it, ample)));
     b.appendChild(f);
@@ -1736,7 +1741,7 @@ function construirPagines() {
 }
 function togglePrevisualitzar() {
   const on = document.body.classList.toggle('previsualitzant');
-  $('btn-previsualitzar').innerHTML = on ? '✏️ Tornar a editar' : '👁️ Vista prèvia A4';
+  $('btn-previsualitzar').innerHTML = on ? 'Tornar a editar' : 'Vista prèvia A4';
   if (on) construirPagines();
 }
 function imprimirAra() {
@@ -1764,7 +1769,7 @@ function obrirCataleg(inst) {
   const cos = $('cataleg-cos');
   cos.innerHTML = '';
   if (inst === 'bateria') {
-    $('cataleg-titol').textContent = '🥁 Catàleg de patrons de bateria';
+    $('cataleg-titol').textContent = 'Catàleg de patrons de bateria';
     const g = document.createElement('div'); g.className = 'modal-graella ample';
     for (let n = 1; n <= 42; n++) {
       const d = document.createElement('div');
@@ -1778,7 +1783,7 @@ function obrirCataleg(inst) {
     }
     cos.appendChild(g);
   } else {
-    $('cataleg-titol').textContent = inst === 'guitarra' ? "🎸 Catàleg d'acords de guitarra" : "🎹 Catàleg d'acords de teclat";
+    $('cataleg-titol').textContent = inst === 'guitarra' ? "Catàleg d'acords de guitarra" : "Catàleg d'acords de teclat";
     [['maj', 'Majors'], ['min', 'Menors'], ['5', 'Power chords (es dibuixen automàticament)']].forEach(([q, t]) => {
       cos.insertAdjacentHTML('beforeend', `<h4 class="subtitol-cataleg">${t}</h4>`);
       const g = document.createElement('div');
@@ -1825,7 +1830,7 @@ function tancarModal(id) {
 }
 function tancarSiFora(e) { if (e.target.classList.contains('modal-overlay')) tancarModal(e.target.id); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay').forEach(m => { if (m.style.display === 'flex') tancarModal(m.id); }); });
-function botoGuardar(id, editant) { $(id).innerHTML = editant ? '💾 Actualitzar' : '✅ Afegir'; }
+function botoGuardar(id, editant) { $(id).innerHTML = editant ? 'Actualitzar' : 'Afegir'; }
 
 /* =========================================================
    EDITOR GUITARRA
@@ -1999,7 +2004,7 @@ function togglePlayBateria() {
     drumSeq.start(0);
     finalBateriaId = Tone.Transport.scheduleOnce(() => Tone.Draw.schedule(aturarBateria, Tone.now()), cb.total * Tone.Time(cb.corxeres ? '8n' : '16n').toSeconds());
     Tone.Transport.start();
-    $('btn-play-bat').innerHTML = '⏹️ Aturar';
+    $('btn-play-bat').innerHTML = 'Aturar';
     isPlayingBat = true;
   });
 }
@@ -2522,7 +2527,7 @@ function melRender() {
   if (melInst === 'saxo') {
     cont.innerHTML = svgSaxo(dades, { selIdx: melSel, vista: $('melodia-vista').value });
     const fora = melNotes.filter(n => n.p && !SAXO.dinsRang(n.p, melSaxo)).length;
-    $('mel-saxo-avis').textContent = fora ? `⚠️ ${fora} nota${fora > 1 ? 's' : ''} fora del rang del saxo (sense número)` : '';
+    $('mel-saxo-avis').textContent = fora ? `${fora} nota${fora > 1 ? 's' : ''} fora del rang del saxo (sense número)` : '';
   } else {
     cont.innerHTML = svgMelodia(dades, { selIdx: melSel });
     $('mel-saxo-avis').textContent = '';
@@ -2765,7 +2770,7 @@ function obrirEditorBaix(it = null, inst) {
   baixEditant = it ? it.id : null;
   bxInst = inst || (it && it.inst === 'guitarra' ? 'guitarra' : 'baix');
   const guit = bxInst === 'guitarra';
-  $('baix-titol-modal').textContent = guit ? '🎸 Escriptor de tablatura de guitarra' : '🎸 Escriptor de baix';
+  $('baix-titol-modal').textContent = guit ? 'Escriptor de tablatura de guitarra' : 'Escriptor de baix';
   $('baix-titol-modal').style.color = guit ? '#007bff' : '#6f42c1';
   $('btn-guardar-baix').style.background = guit ? '#007bff' : '#28a745';
   const d = it ? (it.tipus === 'tab' ? tabAMelBaix(it) : it) : null;
@@ -2824,7 +2829,7 @@ function carregarPiano() {
 }
 function estatPiano() {
   const el = $('mel-so'); if (!el) return;
-  el.textContent = pianoLlest ? '🎹 So: piano' : pianoFallat ? '🎹 So: piano (sintetitzat)' : '🎹 Carregant el so de piano…';
+  el.textContent = pianoLlest ? 'So: piano' : pianoFallat ? 'So: piano (sintetitzat)' : 'Carregant el so de piano…';
 }
 function instrumentMelodia() {
   if (pianoLlest && pianoSampler) return pianoSampler;
@@ -2865,7 +2870,7 @@ function togglePlayMelodia() {
     }, events).start(0);
     finalMelodiaId = Tone.Transport.scheduleOnce(() => Tone.Draw.schedule(aturarAudioMelodia, Tone.now()), st.totalPassos * sem);
     Tone.Transport.start();
-    $('btn-play-melodia').innerHTML = '⏹️ Aturar';
+    $('btn-play-melodia').innerHTML = 'Aturar';
     isMelodiaPlaying = true;
   });
 }
@@ -2960,7 +2965,7 @@ function carregarBateriaReal() {
 }
 function estatBateria() {
   const el = $('est-so-kit'); if (!el) return;
-  el.textContent = kitLlest ? '🥁 bateria acústica' : kitFallat ? '🥁 bateria sintetitzada' : '🥁 carregant la bateria…';
+  el.textContent = kitLlest ? 'bateria acústica' : kitFallat ? 'bateria sintetitzada' : 'carregant la bateria…';
 }
 // Una bateria de veritat no pica mai dos cops igual: accentuem els temps forts
 // i movem els contratemps una mica, que és el que fa que no soni a caixa de ritmes.
@@ -3083,7 +3088,7 @@ function togglePlayEstructura(nomesPart) {
     estFiId = Tone.Transport.scheduleOnce(() => Tone.Draw.schedule(aturarEstructura, Tone.now()), total + 0.4);
     Tone.Transport.start();
     isEstPlaying = true;
-    $('btn-play-est').innerHTML = '⏹️ Aturar';
+    $('btn-play-est').innerHTML = 'Aturar';
     botonsPartSo(nomesPart);
     $('est-so-info').textContent = `Bateria: ${pat.nom} · ${estructura.tempo || 100} bpm · `;
     estatBateria();
@@ -3109,7 +3114,7 @@ function aturarEstructura() {
 function botonsPartSo(i) {
   document.querySelectorAll('#est-parts .est-part').forEach(el => {
     const b = el.querySelector('.est-part-botons button');
-    if (b) b.innerHTML = (i !== undefined && i !== null && +el.dataset.i === i) ? '⏹' : '▶';
+    if (b) b.innerHTML = (i !== undefined && i !== null && +el.dataset.i === i) ? '■' : '▶';
   });
 }
 
@@ -3382,7 +3387,7 @@ function htmlPaleta(i) {
     const B = tempsCompas();
     const nomDiv = d => d === 1 ? 'Tot el compàs' : d === 2 ? 'Dos acords (meitat i meitat)' : `Un acord per temps (${B})`;
     h += '<div class="paleta-eines"><span>Acords en aquest compàs:</span>' + divisionsPossibles().map(d => `<button class="mel-btn${b.div === d ? ' actiu' : ''}" onclick="estDividir(${d})">${nomDiv(d)}</button>`).join('');
-    h += `<span class="pal-sep"></span><button class="mel-btn" onclick="estDuplicarCompas()">⧉ Duplicar compàs</button><button class="mel-btn" onclick="estEsborrarCompas()">🗑️ Esborrar compàs</button>`;
+    h += `<span class="pal-sep"></span><button class="mel-btn" onclick="estDuplicarCompas()">⧉ Duplicar compàs</button><button class="mel-btn" onclick="estEsborrarCompas()">Esborrar compàs</button>`;
     h += '</div>';
   }
   h += `<div style="text-align:right;margin-top:6px"><button class="mel-btn" onclick="estSel=null;estPintarCompassos(${i})">Fet</button></div></div>`;
@@ -3456,7 +3461,7 @@ function paragrafsLletra() {
 }
 function estPintarEstrofes() {
   const ps = paragrafsLletra();
-  const opts = '<option value="">➕ Afegir un fragment de la lletra…</option>' + ps.map((p, i) => `<option value="${i}">${esc(p.split('\n')[0].slice(0, 60))}${p.includes('\n') ? ' …' : ''}</option>`).join('');
+  const opts = '<option value="">Afegir un fragment de la lletra…</option>' + ps.map((p, i) => `<option value="${i}">${esc(p.split('\n')[0].slice(0, 60))}${p.includes('\n') ? ' …' : ''}</option>`).join('');
   document.querySelectorAll('#est-parts .est-estrofa').forEach(s => { s.innerHTML = opts; s.disabled = !ps.length; });
 }
 function estRender() {
@@ -3912,7 +3917,7 @@ function aplicarImportacio(r, titol, artista) {
   if (modeActual === 'est') estRender();
   desar();
   const noDiag = r.acords.filter(a => !acordBasic(a));
-  avis(`✅ Importada: ${estructura.parts.length} parts, ${basics.length} acords${capo ? ` · celleta al ${ordinalTraste(capo)} trast` : ''}${noDiag.length ? ' (sense diagrama: ' + noDiag.join(', ') + ')' : ''}`, 6000);
+  avis(`Importada: ${estructura.parts.length} parts, ${basics.length} acords${capo ? ` · celleta al ${ordinalTraste(capo)} trast` : ''}${noDiag.length ? ' (sense diagrama: ' + noDiag.join(', ') + ')' : ''}`, 6000);
   return true;
 }
 function obrirImportar() { $('imp-url').value = ''; $('imp-text').value = ''; obrirModal('modalImportar'); }
@@ -3924,7 +3929,7 @@ async function importarEnllac() {
   const url = $('imp-url').value.trim();
   if (!/^https?:\/\//i.test(url)) { alert("Enganxa l'enllaç sencer (comença per https://)."); return; }
   if (!biblioConfigurada()) return;
-  $('imp-estat').textContent = '⏳ Llegint la pàgina… (pot trigar uns segons)';
+  $('imp-estat').textContent = 'Llegint la pàgina… (pot trigar uns segons)';
   let j;
   try {
     const r = await fetch(URL_BIBLIOTECA + '?' + new URLSearchParams({ accio: 'importar', url }).toString());
@@ -3945,14 +3950,14 @@ async function importarEnllac() {
     j = { ok: false, error: 'buit' };
   }
   if (/UrlFetchApp|external_request|permiso|permission/i.test(j.detall || '')) {
-    $('imp-estat').textContent = "⚠️ L'script de Google encara no té permís per llegir pàgines web. Cal autoritzar-lo una vegada des de script.google.com (botó ▶ Executa).";
+    $('imp-estat').textContent = "L'script de Google encara no té permís per llegir pàgines web. Cal autoritzar-lo una vegada des de script.google.com (botó ▶ Executa).";
     return;
   }
   const m = j.error === 'domini' ? "Ara per ara només puc llegir enllaços de Cifra Club i Ultimate Guitar."
     : j.error === 'codi' ? "Cal actualitzar l'script de Google amb la versió nova (i fer «Versió nova» a Gestiona les implementacions)."
     : j.error === 'xarxa' ? "No hi ha connexió amb l'script de Google."
     : "Aquesta web no deixa llegir la pàgina automàticament" + (j.detall ? ` (${j.detall})` : '') + ". Copia'n el text i enganxa'l al requadre de sota: funciona sempre.";
-  $('imp-estat').textContent = '⚠️ ' + m;
+  $('imp-estat').textContent = '' + m;
 }
 
 /* =========================================================
@@ -4054,7 +4059,7 @@ function confirmarCompartir() {
 async function enviarCanco(sobreescriure, autor) {
   const titol = $('titolInput').value.trim();
   const nom = [titol, $('artistaInput').value.trim()].filter(Boolean).join(' - ');
-  avis('📤 Compartint…', 20000);
+  avis('Compartint…', 20000);
   try {
     const j = await peticioBiblio('POST', {
       nom, sobreescriure,
@@ -4068,7 +4073,7 @@ async function enviarCanco(sobreescriure, autor) {
     }
     if (!j.ok) throw new Error(j.error || 'error');
     biblioLlista = [];
-    avis(`✅ «${nom}» ja és a la biblioteca compartida (nivell ${nivellCanco})`);
+    avis(`«${nom}» ja és a la biblioteca compartida (nivell ${nivellCanco})`);
   } catch (e) { $('avis').style.display = 'none'; alert(missatgeError(e)); }
 }
 async function obrirBiblioteca(refrescar) {
@@ -4106,13 +4111,13 @@ function pintarBiblioteca() {
 }
 async function obrirDeBiblioteca(id) {
   if ((items.length || estTeContingut()) && !confirm('Això substituirà el que tens ara a la pantalla. Continuo?')) return;
-  avis('📥 Obrint…', 20000);
+  avis('Obrint…', 20000);
   try {
     const j = await peticioBiblio('GET', { id });
     if (!j.ok || !carregarEstat(j.canco)) throw new Error('format');
     tancarModal('modalBiblio');
     renderMarca();
-    avis('✅ Cançó carregada');
+    avis('Cançó carregada');
   } catch (e) { $('avis').style.display = 'none'; alert(e.message === 'format' ? 'Aquesta cançó no es pot obrir.' : missatgeError(e)); }
 }
 
@@ -4207,7 +4212,7 @@ async function importarMusicXML(input) {
     const avisos = [];
     if (part.transpose) avisos.push(`la part estava escrita per a un instrument transpositor i s'ha passat a notes reals`);
     if (part.avisos.length) avisos.push(...part.avisos);
-    avis(`🎷 Importada «${part.nom || r.titol}»: ${afegits.length} bloc${afegits.length > 1 ? 's' : ''} de saxo${avisos.length ? '. ' + avisos.join('; ') : ''}.`, 7000);
+    avis(`Importada «${part.nom || r.titol}»: ${afegits.length} bloc${afegits.length > 1 ? 's' : ''} de saxo${avisos.length ? '. ' + avisos.join('; ') : ''}.`, 7000);
   } catch (e) {
     console.error(e);
     alert("No s'ha pogut importar la partitura.\n\n" + (e && e.message ? e.message : e));
@@ -4368,7 +4373,7 @@ function netejarTot() {
   renderMarca();
   if (recuperada) {
     const nom = textCapcalera();
-    avis(`↩️ Hem recuperat ${nom ? '«' + nom + '»' : 'la cançó que tenies'}. Per començar de zero, fes «🗑️ Començar de nou».`, 7000);
+    avis(`↩️ Hem recuperat ${nom ? '«' + nom + '»' : 'la cançó que tenies'}. Per començar de zero, fes «Començar de nou».`, 7000);
   }
 })();
 </script>
