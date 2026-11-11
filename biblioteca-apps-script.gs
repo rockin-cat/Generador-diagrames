@@ -6,15 +6,16 @@
  * 1. Enganxa aquí l'identificador de la carpeta (el tros final de l'adreça
  *    de la carpeta a Drive: drive.google.com/drive/folders/XXXXXXXX → XXXXXXXX).
  * 2. Tria un codi per al professorat. Només qui el sàpiga podrà compartir
- *    i veure cançons des de l'eina.
+ *    i veure cançons des de l'eina. No l'escriguis aquí (aquest fitxer és públic):
+ *    posa'l a Configuració del projecte → Propietats de l'script, amb el nom CODI.
  */
 const CARPETA_ID = 'ENGANXA_AQUI_LID_DE_LA_CARPETA';
-const CODI = 'xarxa';
+const CODI = PropertiesService.getScriptProperties().getProperty('CODI') || '';   // el codi és a les propietats de l'script, no aquí
 
 function doGet(e) {
   const p = e.parameter || {};
   if (p.accio === 'importar') return importar(p.url);   // no toca el Drive: no cal el codi
-  if (p.codi !== CODI) return resposta({ ok: false, error: 'codi' });
+  if (!CODI || p.codi !== CODI) return resposta({ ok: false, error: 'codi' });
   const carpeta = DriveApp.getFolderById(CARPETA_ID);
 
   // Obrir una cançó concreta
@@ -42,7 +43,7 @@ function doGet(e) {
 function doPost(e) {
   let dades;
   try { dades = JSON.parse(e.postData.contents); } catch (err) { return resposta({ ok: false, error: 'format' }); }
-  if (dades.codi !== CODI) return resposta({ ok: false, error: 'codi' });
+  if (!CODI || dades.codi !== CODI) return resposta({ ok: false, error: 'codi' });
   if (!dades.canco || !dades.nom) return resposta({ ok: false, error: 'format' });
 
   const lock = LockService.getScriptLock();
